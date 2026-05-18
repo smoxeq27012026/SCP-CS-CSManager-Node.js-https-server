@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DELTAxEX :: Админ-панель</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-dark: #0a0d10;
+      --bg-card: rgba(20, 24, 30, 0.6);
+      --bg-input: rgba(30, 35, 42, 0.5);
+      --border-color: rgba(60, 70, 85, 0.3);
+      --text-primary: #e8eaed;
+      --text-secondary: #9ca3af;
+      --accent-green: #3b9d6f;
+      --accent-hover: #48b583;
+      --glass-bg: rgba(25, 30, 38, 0.4);
+      --shadow-glow: 0 4px 24px rgba(59, 157, 111, 0.15);
+      --danger: #ef4444;
+      --warning: #fb923c;
+    }
+    body {
+      font-family: "Inter", -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0a0d10 0%, #151a22 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 32px;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(59, 157, 111, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes gridMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(50px, 50px); }
+    }
+    .container { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
+    h1 {
+      font-size: 28px; font-weight: 700;
+      background: linear-gradient(135deg, #e8eaed 0%, #9ca3af 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+    }
+    .content-card {
+      background: var(--bg-card); backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color); border-radius: 20px;
+      padding: 32px; margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      animation: fadeInUp 0.5s ease;
+    }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .card-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+    .form-input {
+      background: var(--bg-input); backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 14px 16px; color: var(--text-primary); font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .form-input:focus { outline: none; border-color: var(--accent-green); box-shadow: 0 0 0 3px rgba(59,157,111,0.1); }
+    .permissions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .checkbox-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      background: var(--glass-bg); border: 1px solid var(--border-color);
+      border-radius: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 13px;
+    }
+    .checkbox-item:hover { border-color: var(--accent-green); background: var(--bg-input); }
+    .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-green); cursor: pointer; }
+    .btn {
+      padding: 14px 28px; border-radius: 12px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.3s ease; border: none;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-hover) 100%); color: white; box-shadow: var(--shadow-glow); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,157,111,0.3); }
+    .btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-secondary:hover { background: var(--glass-bg); border-color: var(--accent-green); }
+    .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.5); color: var(--danger); padding: 8px 16px; font-size: 12px; }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-sm { padding: 8px 16px; font-size: 12px; }
+    .role-list { display: flex; flex-direction: column; gap: 12px; }
+    .role-card {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; background: var(--bg-input); border: 1px solid var(--border-color);
+      border-radius: 14px; transition: all 0.3s ease;
+    }
+    .role-card:hover { background: var(--glass-bg); border-color: var(--accent-green); }
+    .role-info { display: flex; align-items: center; gap: 12px; }
+    .role-color { width: 12px; height: 12px; border-radius: 50%; }
+    .role-name { font-size: 15px; font-weight: 600; }
+    .role-perms { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .user-card {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; background: var(--bg-input); border: 1px solid var(--border-color);
+      border-radius: 14px; margin-bottom: 8px;
+    }
+    /* autocomplete */
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--bg-card); backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color); border-radius: 0 0 12px 12px;
+      max-height: 240px; overflow-y: auto; z-index: 10; display: none;
+    }
+    .autocomplete-item {
+      padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .autocomplete-item:hover { background: var(--glass-bg); }
+    .autocomplete-item img { width: 32px; height: 32px; border-radius: 50%; }
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      z-index: 2000; align-items: center; justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: var(--bg-sidebar, var(--bg-card)); backdrop-filter: blur(30px);
+      border: 1px solid var(--border-color); border-radius: 20px;
+      padding: 32px; max-width: 600px; width: 90%; box-shadow: 0 16px 64px rgba(0,0,0,0.5);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .modal-header h3 { font-size: 20px; }
+    .close-modal { background: transparent; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; }
+    .toast {
+      position: fixed; right: 24px; top: 24px;
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      padding: 16px 20px; border-radius: 12px; z-index: 9999; animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+    @media (max-width: 768px) {
+      body { padding: 16px; }
+      .form-grid, .permissions-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1><i class="fas fa-crown"></i> Административная панель</h1>
+
+  <!-- Поиск пользователей -->
+  <div class="content-card">
+    <h2 class="card-title"><i class="fas fa-search"></i> Быстрый поиск пользователей</h2>
+    <div class="form-group autocomplete-wrap">
+      <label>Введите ник или Discord ID</label>
+      <input type="text" id="searchUser" class="form-input" placeholder="Начните вводить..." autocomplete="off" />
+      <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+    </div>
+    <div id="selectedUserCard" style="margin-top: 20px;"></div>
+  </div>
+
+  <!-- Создание роли -->
+  <div class="content-card">
+    <h2 class="card-title"><i class="fas fa-plus-circle"></i> Создать роль</h2>
+    <div class="form-grid">
+      <div class="form-group"><label>Название роли</label><input type="text" id="roleName" class="form-input" placeholder="Например: Модератор" /></div>
+      <div class="form-group"><label>Цвет роли</label><input type="color" id="roleColor" class="form-input" value="#3b9d6f" style="height:48px;padding:4px;" /></div>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права доступа:</p>
+    <div class="permissions-grid" id="permissionsCheckboxes"></div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Игровые привилегии:</p>
+    <div class="permissions-grid" id="gamePrivilegesCheckboxes"></div>
+    <button class="btn btn-primary" onclick="createRole()"><i class="fas fa-save"></i> Создать роль</button>
+  </div>
+
+  <!-- Назначение роли пользователю -->
+  <div class="content-card">
+    <h2 class="card-title"><i class="fas fa-user-tag"></i> Назначить роль</h2>
+    <div class="form-grid three">
+      <div class="form-group"><label>Discord ID</label><input type="text" id="assignDiscordId" class="form-input" placeholder="1227091345806594048" /></div>
+      <div class="form-group"><label>Роль</label><select id="assignRole" class="form-input"><option value="">Выберите роль...</option></select></div>
+      <div class="form-group"><label>UID (если есть)</label><input type="text" id="assignUid" class="form-input" placeholder="12345" /></div>
+    </div>
+    <button class="btn btn-primary" onclick="assignRole()"><i class="fas fa-check"></i> Назначить</button>
+  </div>
+
+  <!-- Список ролей -->
+  <div class="content-card">
+    <h2 class="card-title"><i class="fas fa-list"></i> Существующие роли</h2>
+    <div class="role-list" id="roleList"><p style="color:var(--text-secondary)">Загрузка...</p></div>
+  </div>
+</div>
+
+<!-- Модальное окно редактирования роли -->
+<div class="modal" id="editRoleModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Редактирование роли</h3>
+      <button class="close-modal" onclick="closeEditRoleModal()">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Название</label><input type="text" id="editRoleName" class="form-input" /></div>
+      <div class="form-group"><label>Цвет</label><input type="color" id="editRoleColor" class="form-input" value="#3b9d6f" style="height:48px;" /></div>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права доступа:</p>
+    <div class="permissions-grid" id="editPermissionsCheckboxes"></div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Игровые привилегии:</p>
+    <div class="permissions-grid" id="editGamePrivileges"></div>
+    <input type="hidden" id="editRoleId" />
+    <button class="btn btn-primary" onclick="updateRole()"><i class="fas fa-save"></i> Сохранить</button>
+  </div>
+</div>
+
+<!-- Модальное окно пользователей роли -->
+<div class="modal" id="roleUsersModal">
+  <div class="modal-content" style="max-width:700px">
+    <div class="modal-header">
+      <h3>Пользователи с ролью «<span id="roleUsersTitle"></span>»</h3>
+      <button class="close-modal" onclick="closeRoleUsersModal()">×</button>
+    </div>
+    <div id="roleUsersList"></div>
+  </div>
+</div>
+
+<script>
+  // ---------- утилиты ----------
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  function showToast(msg, type) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.cssText = `position:fixed; right:24px; top:24px; background:var(--bg-card); border:1px solid var(--border-color); padding:16px 20px; border-radius:12px; z-index:9999; color:${type==="error"?"#ef4444":"#3b9d6f"};`;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  const permNames = {
+    viewModeration: "Просмотр вкладки «Модерация»",
+    interactModeration: "Взаимодействие с модерацией",
+    deleteEntries: "Удаление записей модерации",
+    accessSettings: "Доступ к настройкам",
+    accessAdmin: "Доступ к админ-панели",
+    canSetUID: "Может устанавливать UID"
+  };
+  const gamePrivileges = {
+    apAccess: "AP Access (доступ к админ-панели в игре)",
+    reservedSlot: "Reserved Slot (зарезервированный слот)"
+  };
+
+  // Динамическое построение чекбоксов
+  function buildCheckboxes(containerId, values = {}) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    for (const [key, label] of Object.entries(permNames)) {
+      const div = document.createElement('div');
+      div.className = 'checkbox-item';
+      div.innerHTML = `<input type="checkbox" id="perm_${key}" ${values[key] ? 'checked' : ''} /><label>${label}</label>`;
+      container.appendChild(div);
+    }
+  }
+  function buildGameCheckboxes(containerId, values = {}) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    for (const [key, label] of Object.entries(gamePrivileges)) {
+      const div = document.createElement('div');
+      div.className = 'checkbox-item';
+      div.innerHTML = `<input type="checkbox" id="game_${key}" ${values[key] ? 'checked' : ''} /><label>${label}</label>`;
+      container.appendChild(div);
+    }
+  }
+  // Инициализация
+  buildCheckboxes('permissionsCheckboxes');
+  buildGameCheckboxes('gamePrivilegesCheckboxes');
+
+  // ---------- Работа с ролями ----------
+  function loadRoles() {
+    fetch("/api/roles")
+      .then(r => r.json())
+      .then(data => {
+        const roleList = document.getElementById("roleList");
+        roleList.innerHTML = "";
+        if (!data.roles || data.roles.length === 0) {
+          roleList.innerHTML = '<p style="color:var(--text-secondary)">Роли не созданы.</p>';
+        } else {
+          data.roles.forEach(role => {
+            const card = document.createElement("div");
+            card.className = "role-card";
+            const perms = role.permissions || {};
+            const permList = [];
+            for (const [key, label] of Object.entries(permNames)) {
+              if (perms[key]) permList.push(label.split(' ')[0]); // коротко
+            }
+            card.innerHTML = `
+              <div class="role-info">
+                <div class="role-color" style="background:${role.color || '#fff'};"></div>
+                <div>
+                  <div class="role-name" style="color:${role.color || '#fff'}">${escapeHtml(role.name)}</div>
+                  <div class="role-perms">${permList.length ? permList.join(', ') : 'Нет прав'}</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary btn-sm" onclick="editRole('${role.id}')"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-secondary btn-sm" onclick="showRoleUsers('${role.id}', '${escapeHtml(role.name)}')"><i class="fas fa-users"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRole('${role.id}')"><i class="fas fa-trash"></i></button>
+              </div>
+            `;
+            roleList.appendChild(card);
+          });
+        }
+        // Обновить выпадающий список назначения
+        const assignRole = document.getElementById("assignRole");
+        assignRole.innerHTML = '<option value="">Выберите роль...</option>';
+        (data.roles || []).forEach(role => {
+          assignRole.innerHTML += `<option value="${role.id}">${escapeHtml(role.name)}</option>`;
+        });
+      });
+  }
+
+  function createRole() {
+    const name = document.getElementById("roleName").value.trim();
+    const color = document.getElementById("roleColor").value;
+    if (!name) return showToast("Введите название роли", "error");
+
+    const permissions = {};
+    for (const key of Object.keys(permNames)) {
+      permissions[key] = document.getElementById(`perm_${key}`).checked;
+    }
+    const apAccess = document.getElementById(`game_apAccess`).checked;
+    const reservedSlot = document.getElementById(`game_reservedSlot`).checked;
+
+    fetch("/api/roles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        showToast("Роль создана!", "success");
+        loadRoles();
+        document.getElementById("roleName").value = "";
+        document.querySelectorAll('#permissionsCheckboxes input[type="checkbox"], #gamePrivilegesCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+      } else {
+        showToast("Ошибка: " + (d.error || ""), "error");
+      }
+    });
+  }
+
+  // Редактирование роли
+  function editRole(roleId) {
+    fetch("/api/roles")
+      .then(r => r.json())
+      .then(data => {
+        const role = (data.roles || []).find(r => r.id == roleId);
+        if (!role) return showToast("Роль не найдена", "error");
+        document.getElementById("editRoleId").value = role.id;
+        document.getElementById("editRoleName").value = role.name;
+        document.getElementById("editRoleColor").value = role.color || "#3b9d6f";
+        buildCheckboxes('editPermissionsCheckboxes', role.permissions || {});
+        buildGameCheckboxes('editGamePrivileges', { apAccess: role.ap_access || false, reservedSlot: role.reserved_slot || false });
+        document.getElementById("editRoleModal").classList.add("active");
+      });
+  }
+
+  function updateRole() {
+    const id = document.getElementById("editRoleId").value;
+    const name = document.getElementById("editRoleName").value.trim();
+    const color = document.getElementById("editRoleColor").value;
+    if (!name) return showToast("Введите название", "error");
+
+    const permissions = {};
+    for (const key of Object.keys(permNames)) {
+      const el = document.getElementById(`perm_${key}`);
+      if (el) permissions[key] = el.checked;
+    }
+    const apAccess = document.getElementById(`game_apAccess`)?.checked || false;
+    const reservedSlot = document.getElementById(`game_reservedSlot`)?.checked || false;
+
+    fetch(`/api/roles/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        showToast("Роль обновлена!", "success");
+        closeEditRoleModal();
+        loadRoles();
+      } else {
+        showToast("Ошибка: " + (d.error || ""), "error");
+      }
+    });
+  }
+
+  function closeEditRoleModal() {
+    document.getElementById("editRoleModal").classList.remove("active");
+  }
+
+  function deleteRole(roleId) {
+    if (!confirm("Удалить роль? Это также удалит её у всех пользователей.")) return;
+    fetch(`/api/roles/${roleId}`, { method: "DELETE" })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) { showToast("Роль удалена", "success"); loadRoles(); }
+        else showToast("Ошибка: " + (d.error || ""), "error");
+      });
+  }
+
+  // ---------- Управление пользователями роли ----------
+  function showRoleUsers(roleId, roleName) {
+    document.getElementById("roleUsersTitle").textContent = roleName;
+    fetch(`/api/roles/${roleId}/users`)
+      .then(r => r.json())
+      .then(data => {
+        const list = document.getElementById("roleUsersList");
+        list.innerHTML = "";
+        if (!data.users || data.users.length === 0) {
+          list.innerHTML = '<p style="color:var(--text-secondary)">Нет пользователей с этой ролью.</p>';
+        } else {
+          data.users.forEach(user => {
+            const div = document.createElement("div");
+            div.className = "user-card";
+            div.innerHTML = `
+              <div style="display:flex;align-items:center;gap:12px;">
+                <img src="${user.avatar}" style="width:40px;height:40px;border-radius:50%;" />
+                <div>
+                  <div style="font-weight:600;">${escapeHtml(user.username)}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">ID: ${user.discordId}</div>
+                </div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="removeRoleFromUser('${user.discordId}', '${roleId}')"><i class="fas fa-user-minus"></i> Снять роль</button>
+            `;
+            list.appendChild(div);
+          });
+        }
+        document.getElementById("roleUsersModal").classList.add("active");
+      });
+  }
+
+  function closeRoleUsersModal() {
+    document.getElementById("roleUsersModal").classList.remove("active");
+  }
+
+  function removeRoleFromUser(discordId, roleId) {
+    if (!confirm("Снять эту роль у пользователя?")) return;
+    fetch(`/api/players/${discordId}/roles/${roleId}`, { method: "DELETE" })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          showToast("Роль снята", "success");
+          // Обновить список пользователей роли (перезапросить)
+          const roleName = document.getElementById("roleUsersTitle").textContent;
+          showRoleUsers(roleId, roleName);
+          loadRoles(); // на случай если в списке ролей что-то изменится
+        } else {
+          showToast("Ошибка: " + (d.error || ""), "error");
+        }
+      });
+  }
+
+  // ---------- Назначение роли ----------
+  function assignRole() {
+    const discordId = document.getElementById("assignDiscordId").value.trim();
+    const roleId = document.getElementById("assignRole").value;
+    const uid = document.getElementById("assignUid").value.trim();
+    if (!discordId || !roleId) return showToast("Заполните Discord ID и выберите роль", "error");
+    fetch("/api/players/assign-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ discordId, roleId, uid: uid || null })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        showToast("Роль назначена!", "success");
+        document.getElementById("assignDiscordId").value = "";
+        document.getElementById("assignUid").value = "";
+        loadRoles();
+      } else {
+        showToast("Ошибка: " + (d.error || ""), "error");
+      }
+    });
+  }
+
+  // ---------- Поиск пользователей с автодополнением ----------
+  const searchInput = document.getElementById("searchUser");
+  const dropdown = document.getElementById("autocompleteDropdown");
+  let searchTimeout;
+
+  searchInput.addEventListener("input", function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    if (query.length < 1) {
+      dropdown.style.display = "none";
+      return;
+    }
+    searchTimeout = setTimeout(() => {
+      fetch(`/api/users/search?q=${encodeURIComponent(query)}`)
+        .then(r => r.json())
+        .then(data => {
+          dropdown.innerHTML = "";
+          if (!data.users || data.users.length === 0) {
+            dropdown.innerHTML = '<div class="autocomplete-item" style="color:var(--text-secondary);">Ничего не найдено</div>';
+            dropdown.style.display = "block";
+            return;
+          }
+          data.users.forEach(user => {
+            const item = document.createElement("div");
+            item.className = "autocomplete-item";
+            item.innerHTML = `<img src="${user.avatar}" /><div><div style="font-weight:600;">${escapeHtml(user.username)}</div><div style="font-size:12px;color:var(--text-secondary);">${user.discordId}</div></div>`;
+            item.addEventListener("click", () => {
+              selectUser(user);
+              dropdown.style.display = "none";
+              searchInput.value = user.username;
+            });
+            dropdown.appendChild(item);
+          });
+          dropdown.style.display = "block";
+        });
+    }, 300);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".autocomplete-wrap")) dropdown.style.display = "none";
+  });
+
+  function selectUser(user) {
+    const card = document.getElementById("selectedUserCard");
+    // Получаем роли пользователя
+    fetch(`/api/me?userId=${user.discordId}`) // но /me возвращает текущего, лучше использовать admin/users?discordId=...
+      .then(() => {}) // упростим: сделаем запрос к /api/admin/users?discordId=
+    fetch(`/api/admin/users?discordId=${user.discordId}`)
+      .then(r => r.json())
+      .then(data => {
+        const u = (data.users || [])[0] || user;
+        const roles = u.roles || [];
+        const rolesHtml = roles.length ? roles.map(r => `<span style="display:inline-block;padding:4px 10px;border-radius:8px;background:${r.color}20;color:${r.color};border:1px solid ${r.color};margin-right:6px;">${escapeHtml(r.name)}</span>`).join('') : '<span style="color:var(--text-secondary);">Нет ролей</span>';
+        card.innerHTML = `
+          <div class="user-card" style="display:flex;align-items:center;gap:16px;">
+            <img src="${u.avatar}" style="width:56px;height:56px;border-radius:50%;" />
+            <div style="flex:1;">
+              <div style="font-size:18px;font-weight:600;">${escapeHtml(u.username)}</div>
+              <div style="font-size:13px;color:var(--text-secondary);">Discord ID: ${u.discordId}</div>
+              <div style="margin-top:8px;">${rolesHtml}</div>
+            </div>
+          </div>
+        `;
+      });
+  }
+
+  // Закрытие модалок по клику вне
+  document.getElementById("editRoleModal").addEventListener("click", (e) => { if (e.target.id === "editRoleModal") closeEditRoleModal(); });
+  document.getElementById("roleUsersModal").addEventListener("click", (e) => { if (e.target.id === "roleUsersModal") closeRoleUsersModal(); });
+
+  // Старт
+  loadRoles();
+</script>
+</body>
+</html>

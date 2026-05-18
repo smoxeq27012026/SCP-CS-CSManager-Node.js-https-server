@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DELTAxEX :: CSManager</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --bg-dark: #0a0d10;
+        --bg-card: rgba(20, 24, 30, 0.6);
+        --bg-sidebar: rgba(15, 18, 23, 0.85);
+        --bg-input: rgba(30, 35, 42, 0.5);
+        --border-color: rgba(60, 70, 85, 0.3);
+        --text-primary: #e8eaed;
+        --text-secondary: #9ca3af;
+        --accent-green: #3b9d6f;
+        --accent-hover: #48b583;
+        --glass-bg: rgba(25, 30, 38, 0.4);
+        --shadow-glow: 0 4px 24px rgba(59, 157, 111, 0.15);
+      }
+      body {
+        font-family: "Inter", -apple-system, sans-serif;
+        background: linear-gradient(135deg, #0a0d10 0%, #151a22 100%);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+        padding: 20px;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(59, 157, 111, 0.03) 1px,
+          transparent 1px
+        );
+        background-size: 50px 50px;
+        animation: gridMove 20s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+      @keyframes gridMove {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(50px, 50px);
+        }
+      }
+
+      .welcome-container {
+        display: flex;
+        gap: 24px;
+        max-width: 900px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+      }
+
+      .welcome-card {
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 40px 32px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.6s ease;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .welcome-card.left {
+        animation-delay: 0s;
+      }
+
+      .welcome-card.right {
+        animation-delay: 0.15s;
+        text-align: left;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .welcome-card h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #e8eaed 0%, #9ca3af 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .welcome-card .logo-gradient {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, #3b9d6f 0%, #5bc896 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .welcome-card p {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      .welcome-card p.subtitle {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+      }
+
+      .btn {
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .btn::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      .btn:active::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--accent-green) 0%,
+          var(--accent-hover) 100%
+        );
+        color: white;
+        box-shadow: var(--shadow-glow);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(59, 157, 111, 0.3);
+      }
+
+      .feature-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 16px;
+        background: var(--glass-bg);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+      }
+
+      .feature-item:hover {
+        background: var(--bg-input);
+        border-color: var(--accent-green);
+        transform: translateX(4px);
+      }
+
+      .feature-item i {
+        font-size: 20px;
+        color: var(--accent-green);
+        width: 24px;
+        text-align: center;
+        margin-top: 2px;
+      }
+
+      .feature-item div h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: var(--text-primary);
+      }
+
+      .feature-item div p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+        line-height: 1.4;
+      }
+
+      @media (max-width: 768px) {
+        .welcome-container {
+          flex-direction: column;
+          max-width: 450px;
+        }
+        .welcome-card {
+          padding: 32px 24px;
+        }
+        .welcome-card h1 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="welcome-container">
+      <!-- Левая панель: Приветствие и вход -->
+      <div class="welcome-card left">
+        <div class="logo-gradient">
+          <i class="fa fa-angle-double-right"></i> DELTAxEX
+          <i class="fa fa-angle-double-left"></i>
+        </div>
+        <h1>Добро пожаловать!</h1>
+        <p>
+          Управление серверами CS на одном сайте. Авторизуйтесь через Discord,
+          чтобы получить доступ к панели управления.
+        </p>
+        <a href="/auth/login" class="btn btn-primary">
+          <i class="fab fa-discord"></i> Авторизация через Discord
+        </a>
+        <a
+          href="/auth/key-login"
+          style="
+            display: block;
+            margin-top: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+          "
+        >
+          <i class="fas fa-key"></i> Войти через ключ доступа
+        </a>
+      </div>
+
+      <!-- Правая панель: Возможности -->
+      <div class="welcome-card right">
+        <h1>Возможности</h1>
+        <p class="subtitle">Что доступно в панели управления:</p>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <i class="fas fa-users"></i>
+            <div>
+              <h4>Управление пользователями v 1.6</h4>
+              <p>Поиск, просмотр профилей, назначение Game ID и ролей</p>
+            </div>
+          </li>
+          <li class="feature-item">
+            <i class="fas fa-gavel"></i>
+            <div>
+              <h4>Модерация</h4>
+              <p>Добавление в розыск, управление наказаниями</p>
+            </div>
+          </li>
+          <li class="feature-item">
+            <i class="fa fa-rocket"></i>
+            <div>
+              <h4>Интеграция с серверами</h4>
+              <p>CLASSIC и MEDIUMRP - синхронизация ролей через API</p>
+            </div>
+          </li>
+          <li class="feature-item">
+            <i class="fa fa-key"></i>
+            <div>
+              <h4>Двухфакторная защита</h4>
+              <p>Подключите Google Authenticator для безопасного входа</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

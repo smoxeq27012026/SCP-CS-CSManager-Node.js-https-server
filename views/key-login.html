@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DELTAxEX :: Вход по ключу</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --bg-dark: #0a0d10;
+        --bg-card: rgba(20, 24, 30, 0.6);
+        --border-color: rgba(60, 70, 85, 0.3);
+        --text-primary: #e8eaed;
+        --text-secondary: #9ca3af;
+        --accent-green: #3b9d6f;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #0a0d10, #151a22);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card {
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 420px;
+        width: 90%;
+      }
+      .card h2 {
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+      .card p {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 24px;
+      }
+      .key-input {
+        background: rgba(30, 35, 42, 0.5);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+        color: white;
+        font-size: 14px;
+        text-align: center;
+        width: 100%;
+        font-family: monospace;
+        margin-bottom: 16px;
+      }
+      .btn {
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: linear-gradient(135deg, var(--accent-green), #48b583);
+        color: white;
+        width: 100%;
+      }
+      .error {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 8px;
+      }
+      .back-link {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-top: 16px;
+        display: block;
+        text-decoration: none;
+      }
+      .back-link:hover {
+        color: var(--accent-green);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2><i class="fas fa-key"></i> Вход по ключу доступа</h2>
+      <p>Введите персональный ключ доступа</p>
+      <input
+        type="text"
+        id="key"
+        class="key-input"
+        placeholder="dexk_..."
+        autofocus
+      />
+      <button class="btn" onclick="login()">Войти</button>
+      <p class="error" id="error"></p>
+      <a href="/" class="back-link"
+        ><i class="fas fa-arrow-left"></i> На главную</a
+      >
+    </div>
+    <script>
+      async function login() {
+        const key = document.getElementById("key").value.trim();
+        if (!key)
+          return (document.getElementById("error").textContent =
+            "Введите ключ");
+        const res = await fetch("/auth/key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key }),
+        });
+        const data = await res.json();
+        if (data.success) window.location.href = data.redirect;
+        else
+          document.getElementById("error").textContent = data.error || "Ошибка";
+      }
+    </script>
+  </body>
+</html>

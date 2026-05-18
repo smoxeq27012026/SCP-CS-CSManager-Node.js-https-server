@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DELTAxEX :: 2FA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #0a0d10; --bg-card: rgba(20,24,30,0.6); --border-color: rgba(60,70,85,0.3);
+            --text-primary: #e8eaed; --text-secondary: #9ca3af; --accent-green: #3b9d6f; --accent-hover: #48b583;
+        }
+        body {
+            font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0a0d10, #151a22);
+            color: var(--text-primary); min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .card {
+            background: var(--bg-card); backdrop-filter: blur(20px); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 40px; text-align: center; max-width: 420px; width: 90%;
+        }
+        .card h2 { font-size: 24px; margin-bottom: 8px; }
+        .card p { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+        .code-input {
+            background: rgba(30,35,42,0.5); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 16px; color: white; font-size: 24px; text-align: center; width: 100%; letter-spacing: 8px;
+            margin-bottom: 16px;
+        }
+        .btn {
+            padding: 14px 28px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+            border: none; background: linear-gradient(135deg, var(--accent-green), var(--accent-hover)); color: white; width: 100%;
+        }
+        .error { color: #ef4444; font-size: 13px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2><i class="fas fa-shield-haltered"></i> Двухфакторная аутентификация</h2>
+    <p>Введите 6-значный код из приложения‑аутентификатора</p>
+    <input type="text" id="code" class="code-input" placeholder="000000" maxlength="6" inputmode="numeric" autofocus>
+    <button class="btn" onclick="verify()">Подтвердить</button>
+    <p class="error" id="error"></p>
+</div>
+<script>
+async function verify() {
+  const code = document.getElementById('code').value.trim();
+  if (code.length !== 6) return document.getElementById('error').textContent = 'Введите 6 цифр';
+  const res = await fetch('/auth/2fa/verify', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ code })
+  });
+  const data = await res.json();
+  if (data.success) window.location.href = data.redirect;
+  else document.getElementById('error').textContent = data.error || 'Ошибка';
+}
+document.getElementById('code').addEventListener('keydown', e => { if (e.key === 'Enter') verify(); });
+</script>
+</body>
+</html>
