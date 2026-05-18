@@ -48,4 +48,4 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 2Сервер запущен на порту ${PORT}`));
