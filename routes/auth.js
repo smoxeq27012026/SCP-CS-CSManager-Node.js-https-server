@@ -102,37 +102,4 @@ router.get("/logout", (req, res, next) => {
   });
 });
 
-router.post("/key", async (req, res) => {
-  const { key } = req.body;
-  if (!key || !key.startsWith("dexk_")) {
-    return res.status(400).json({ error: "Неверный формат ключа" });
-  }
-
-  const { data: player } = await supabase
-    .from("players")
-    .select("discord_id, username, avatar, totp_enabled, access_key")
-    .eq("access_key", key)
-    .single();
-
-  if (!player) {
-    return res.status(403).json({ error: "Ключ не найден" });
-  }
-
-  // Автоматически логиним пользователя (создаём фейковый профиль)
-  const user = {
-    id: player.discord_id,
-    username: player.username,
-    avatar: player.avatar,
-  };
-
-  req.login(user, (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    req.session.totpVerified = true; // Ключ уже подтверждён 2FA
-    res.json({
-      success: true,
-      redirect: `/${player.discord_id}/dashboard/users`,
-    });
-  });
-});
-
 module.exports = router;
