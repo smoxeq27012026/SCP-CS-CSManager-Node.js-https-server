@@ -373,7 +373,6 @@ router.get("/admin/users", isAuthenticated, isOwner, async (req, res) => {
   }
 });
 
-module.exports = router;
 
 const crypto = require("crypto");
 router.get("/me/access-key", isAuthenticated, async (req, res) => {
@@ -585,3 +584,71 @@ router.get("/game/retrieval/clear/:uid", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Получить профиль другого пользователя (для модалки)
+router.get("/player/:discordId", isAuthenticated, async (req, res) => {
+  try {
+    const { discordId } = req.params;
+    
+    // Получаем игрока из БД
+    const { data: player } = await supabase
+      .from("players")
+      .select("*")
+      .eq("discord_id", discordId)
+      .single();
+    
+    if (!player) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+    
+    // Собираем permissions из ролей
+    const permissions = {
+      viewModeration: false,
+      interactModeration: false,
+      deleteEntries: false,
+      accessSettings: false,
+      accessAdmin: false,
+      canSetUID: false,
+      apAccess: false,
+      reservedSlot: false
+    };
+    
+    if (player.roles && player.roles.length > 0) {
+      for (const userRole of player.roles) {
+        const { data: role } = await supabase
+          .from("roles")
+          .select("permissions, ap_access, reserved_slot")
+          .eq("id", userRole.id)
+          .single();
+        if (role) {
+          if (role.permissions) {
+            for (const key of Object.keys(permissions)) {
+              if (role.permissions[key]) permissions[key] = true;
+            }
+          }
+          if (role.ap_access) permissions.apAccess = true;
+          if (role.reserved_slot) permissions.reservedSlot = true;
+        }
+      }
+    }
+    
+    // Владелец имеет все права
+    if (player.discord_id === process.env.OWNER_ID) {
+      Object.keys(permissions).forEach(k => permissions[k] = true);
+    }
+    
+    res.json({
+      discordId: player.discord_id,
+      username: player.username,
+      avatar: player.avatar,
+      uid: player.uid,
+      roles: player.roles || [],
+      permissions,
+      isOwner: player.discord_id === process.env.OWNER_ID
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;

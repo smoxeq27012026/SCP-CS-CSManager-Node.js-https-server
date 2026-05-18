@@ -1494,45 +1494,171 @@
       }
 
       function openUserModal(user) {
-        document.getElementById("modalAvatar").src = user.avatar;
-        document.getElementById("modalUsername").textContent = user.username;
-        document.getElementById("modalDiscordId").textContent =
-          "Discord ID: " + user.discordId;
-        document.getElementById("modalGameId").textContent = user.uid || "—";
-        const btnSet = document.getElementById("btnSetUid");
-        if (user.discordId === currentUser?.discordId) {
-          btnSet.textContent = "Изменить Game ID";
-          btnSet.onclick = async () => {
-            const newUid = await showInputModal(
-              "Изменение UID",
-              "Введите новый Game ID:",
-              "Например: 12345"
-            );
-            if (!newUid) return;
-            fetch("/api/me/uid", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ uid: newUid }),
-            })
-              .then((r) => r.json())
-              .then((d) => {
-                if (d.success) {
-                  currentUser.uid = newUid;
-                  document.getElementById("modalGameId").textContent = newUid;
-                  updateProfilePopup();
-                  showToast("Успешно", "Game ID обновлён!", "success");
-                  searchUsers();
-                } else {
-                  showToast("Ошибка", d.error || "", "error");
-                }
+        // Загружаем полный профиль пользователя
+        fetch(`/api/player/${user.discordId}`)
+          .then(r => r.json())
+          .then(playerData => {
+            if (playerData.error) {
+              showToast("Ошибка", playerData.error, "error");
+              return;
+            }
+            
+            document.getElementById("modalAvatar").src = playerData.avatar;
+            document.getElementById("modalUsername").textContent = playerData.username;
+            document.getElementById("modalDiscordId").textContent = "Discord ID: " + playerData.discordId;
+            document.getElementById("modalGameId").textContent = playerData.uid || "—";
+            
+            const btnSet = document.getElementById("btnSetUid");
+            
+            // Проверяем: это свой профиль ИЛИ пользователь owner/admin
+            const isOwner = currentUser?.discordId === "1227091345806594048";
+            const isSelf = playerData.discordId === currentUser?.discordId;
+            
+            if (isSelf) {
+              // Свой профиль — можно менять UID
+              btnSet.textContent = "Изменить Game ID";
+              btnSet.disabled = false;
+              btnSet.style.opacity = "1";
+              btnSet.onclick = async () => {
+                const newUid = await showInputModal(
+                  "Изменение UID",
+                  "Введите новый Game ID:",
+                  "Например: 12345"
+                );
+                if (!newUid) return;
+                fetch("/api/me/uid", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ uid: newUid }),
+                })
+                  .then((r) => r.json())
+                  .then((d) => {
+                    if (d.success) {
+                      currentUser.uid = newUid;
+                      document.getElementById("modalGameId").textContent = newUid;
+                      updateProfilePopup();
+                      showToast("Успешно", "Game ID обновлён!", "success");
+                      searchUsers();
+                    } else {
+                      showToast("Ошибка", d.error || "", "error");
+                    }
+                  });
+              };
+            } else if (isOwner || userPermissions.canSetUID) {
+              // Owner или есть право canSetUID — может менять чужой UID
+              btnSet.textContent = "Изменить Game ID";
+              btnSet.disabled = false;
+              btnSet.style.opacity = "1";
+              btnSet.onclick = async () => {
+                const newUid = await showInputModal(
+                  "Изменение UID",
+                  `Введите новый Game ID для ${playerData.username}:`,
+                  "Например: 12345"
+                );
+                if (!newUid) return;
+                fetch("/api/me/uid", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ uid: newUid, discordId: playerData.discordId }),
+                })
+                  .then((r) => r.json())
+                  .then((d) => {
+                    if (d.success) {
+                      document.getElementById("modalGameId").textContent = newUid;
+                      showToast("Успешно", "Game ID обновлён!", "success");
+                      searchUsers();
+                    } else {
+                      showToast("Ошибка", d.error || "", "error");
+                    }
+                  });
+              };
+            } else {
+              // Чужой профиль — кнопка неактивна
+              btnSet.textContent = "Game ID";
+              btnSet.disabled = true;
+              btnSet.style.opacity = "0.5";
+              btnSet.onclick = () => showToast("Нет прав", "Вы не можете изменить чужой UID", "warning");
+            }
+            
+            // Показываем роли и права
+            const modalContent = document.querySelector("#userModal .modal-content");
+            
+            // Удаляем старые блоки ролей и прав, если есть
+            const oldRoles = document.getElementById("modalRoles");
+            const oldPerms = document.getElementById("modalPermissions");
+            if (oldRoles) oldRoles.remove();
+            if (oldPerms) oldPerms.remove();
+            
+            // Добавляем блок с ролями
+            const rolesDiv = document.createElement("div");
+            rolesDiv.id = "modalRoles";
+            rolesDiv.style.cssText = "margin-bottom: 16px;";
+            rolesDiv.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">РОЛИ</p>';
+            
+            const rolesContainer = document.createElement("div");
+            rolesContainer.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;";
+            
+            if (playerData.roles && playerData.roles.length > 0) {
+              playerData.roles.forEach(role => {
+                const span = document.createElement("span");
+                span.className = "role-badge";
+                span.style.cssText = `border-color:${role.color || "#3b9d6f"};color:${role.color || "#3b9d6f"};background:${role.color || "#3b9d6f"}15;`;
+                span.textContent = role.name;
+                rolesContainer.appendChild(span);
               });
-          };
-        } else {
-          btnSet.textContent = "Game ID";
-          btnSet.onclick = () =>
-            showToast("Нет прав", "Вы не можете изменить чужой UID", "error");
-        }
-        document.getElementById("userModal").classList.add("active");
+            } else {
+              rolesContainer.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">Нет ролей</span>';
+            }
+            rolesDiv.appendChild(rolesContainer);
+            
+            // Добавляем блок с правами
+            const permsDiv = document.createElement("div");
+            permsDiv.id = "modalPermissions";
+            permsDiv.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">ПРАВА</p>';
+            
+            const permNames = {
+              viewModeration: "Просмотр модерации",
+              interactModeration: "Действия в модерации",
+              deleteEntries: "Удаление записей",
+              accessSettings: "Доступ к настройкам",
+              accessAdmin: "Доступ к админке",
+              canSetUID: "Смена UID",
+            };
+            
+            const permsList = document.createElement("div");
+            let hasPerms = false;
+            
+            for (const [key, label] of Object.entries(permNames)) {
+              if (playerData.permissions[key]) {
+                hasPerms = true;
+                const item = document.createElement("div");
+                item.style.cssText = "font-size:12px;color:var(--accent-green);padding:4px 0;";
+                item.innerHTML = `<i class="fas fa-check-circle"></i> ${label}`;
+                permsList.appendChild(item);
+              }
+            }
+            
+            if (playerData.isOwner) {
+              const ownerItem = document.createElement("div");
+              ownerItem.style.cssText = "font-size:12px;color:#fb923c;padding:4px 0;";
+              ownerItem.innerHTML = '<i class="fas fa-crown"></i> Владелец (все права)';
+              permsList.appendChild(ownerItem);
+            } else if (!hasPerms) {
+              permsList.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">Нет прав</span>';
+            }
+            
+            permsDiv.appendChild(permsList);
+            
+            // Вставляем роли и права перед кнопками
+            const buttonGroup = document.querySelector("#userModal .button-group");
+            buttonGroup.parentNode.insertBefore(permsDiv, buttonGroup);
+            buttonGroup.parentNode.insertBefore(rolesDiv, permsDiv);
+            
+            document.getElementById("userModal").classList.add("active");
+          })
+          .catch(err => {
+            showToast("Ошибка", "Не удалось загрузить профиль", "error");
+          });
       }
 
       function closeModal() {
