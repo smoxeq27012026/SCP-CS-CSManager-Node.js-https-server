@@ -17,7 +17,8 @@ router.get("/me", async (req, res) => {
       avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
       uid: null,
       roles: [],
-      permissions: {}
+      permissions: {},
+      provider: null
     });
   }
   try {
@@ -28,12 +29,19 @@ router.get("/me", async (req, res) => {
       .single();
 
     if (!player) {
+      // Определяем провайдера по ID
+      const provider = req.user.id.startsWith("google_") ? "google" : "discord";
+      const avatar = provider === "google" 
+        ? (req.user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(req.user.username)}`)
+        : `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`;
+      
       const { data: newPlayer } = await supabase
         .from("players")
         .insert({
           discord_id: req.user.id,
           username: req.user.username,
-          avatar: `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`,
+          avatar: avatar,
+          provider: provider,
         })
         .select()
         .single();
@@ -82,7 +90,8 @@ router.get("/me", async (req, res) => {
       avatar: player.avatar,
       uid: player.uid,
       roles: player.roles || [],
-      permissions
+      permissions,
+      provider: player.provider || (player.discord_id.startsWith("google_") ? "google" : "discord")
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

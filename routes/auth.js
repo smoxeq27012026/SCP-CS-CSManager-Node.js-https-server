@@ -157,17 +157,30 @@ router.get("/google/callback", (req, res, next) => {
         .single();
 
       if (!player) {
+        // 🔥 ИСПРАВЛЕНО: правильный URL аватара Google
+        const googleAvatarUrl = user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(user.username)}`;
+        
         const { data: newPlayer } = await supabase
           .from("players")
           .insert({
             discord_id: user.id,
             username: user.username,
-            avatar: user.avatar,
+            avatar: googleAvatarUrl,
             provider: "google",
           })
           .select()
           .single();
         player = newPlayer;
+      } else {
+        // Обновляем аватар если он кривой
+        if (!player.avatar || player.avatar.includes('cdn.discordapp.com/avatars/google_')) {
+          const fixedAvatar = user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(user.username)}`;
+          await supabase
+            .from("players")
+            .update({ avatar: fixedAvatar })
+            .eq("discord_id", user.id);
+          player.avatar = fixedAvatar;
+        }
       }
 
       if (player?.totp_enabled) {

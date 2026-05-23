@@ -1270,12 +1270,15 @@
       function updateProfilePopup() {
         if (!currentUser) return;
         document.getElementById("popupAvatar").src = currentUser.avatar;
-        document.getElementById("popupUsername").textContent =
-          currentUser.username;
-        document.getElementById("popupDiscordId").textContent =
-          "Discord ID: " + currentUser.discordId;
-        document.getElementById("popupGameId").textContent =
-          currentUser.uid || "—";
+        document.getElementById("popupUsername").textContent = currentUser.username;
+
+        const providerIcon = currentUser.provider === 'google' 
+            ? '<i class="fab fa-google" style="color:#4285f4;"></i> Google' 
+            : '<i class="fab fa-discord" style="color:#5865F2;"></i> Discord';
+          
+        document.getElementById("popupDiscordId").innerHTML = `${providerIcon} | ID: ${currentUser.discordId}`;
+        document.getElementById("popupGameId").textContent = currentUser.uid || "—";
+
 
         const rolesDiv = document.getElementById("popupRoles");
         rolesDiv.innerHTML = "";

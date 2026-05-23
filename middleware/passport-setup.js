@@ -28,11 +28,17 @@ passport.use(
       passReqToCallback: true,
     },
     async (req, accessToken, refreshToken, profile, done) => {
+      // Стандартная аватарка если нет фото
+      let avatarUrl = profile.photos?.[0]?.value;
+      if (!avatarUrl) {
+        avatarUrl = `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(profile.displayName)}`;
+      }
+      
       const enrichedProfile = {
         ...profile,
         id: `google_${profile.id}`,
         username: profile.displayName,
-        avatar: profile.photos?.[0]?.value || "https://cdn.discordapp.com/embed/avatars/0.png",
+        avatar: avatarUrl,
         provider: "google",
       };
       return done(null, enrichedProfile);
