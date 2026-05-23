@@ -1187,7 +1187,9 @@
           userPermissions = data.permissions || {};
           document.getElementById("userAvatar").src = data.avatar;
           document.getElementById("userName").textContent = data.username;
-          document.getElementById("userDiscordId").textContent = "@" + data.discordId;
+          const isGoogle = data.discordId?.startsWith('google_');
+          const displayId = isGoogle ? data.discordId.replace('google_', '') : data.discordId;
+          document.getElementById("userDiscordId").innerHTML = isGoogle ? `<i class="fab fa-google" style="color:#4285f4;"></i> ${displayId}` : `@${displayId}`;
           if (data.discordId === "guest") window.location.href = "/auth/login";
           updateProfilePopup();
           // Построить меню с учетом прав
@@ -1271,14 +1273,20 @@
         if (!currentUser) return;
         document.getElementById("popupAvatar").src = currentUser.avatar;
         document.getElementById("popupUsername").textContent = currentUser.username;
-
-        const providerIcon = currentUser.provider === 'google' 
-            ? '<i class="fab fa-google" style="color:#4285f4;"></i> Google' 
-            : '<i class="fab fa-discord" style="color:#5865F2;"></i> Discord';
-          
-        document.getElementById("popupDiscordId").innerHTML = `${providerIcon} | ID: ${currentUser.discordId}`;
+        
+        // 🔥 ИСПРАВЛЕНО: определяем провайдера и показываем правильную иконку
+        const isGoogle = currentUser.discordId?.startsWith('google_');
+        const providerIcon = isGoogle 
+          ? '<i class="fab fa-google" style="color:#4285f4;"></i> Google' 
+          : '<i class="fab fa-discord" style="color:#5865F2;"></i> Discord';
+        
+        // Показываем ID без префикса для Google
+        const displayId = isGoogle 
+          ? currentUser.discordId?.replace('google_', '') 
+          : currentUser.discordId;
+        
+        document.getElementById("popupDiscordId").innerHTML = `${providerIcon} | ID: ${displayId || '—'}`;
         document.getElementById("popupGameId").textContent = currentUser.uid || "—";
-
 
         const rolesDiv = document.getElementById("popupRoles");
         rolesDiv.innerHTML = "";
@@ -1286,17 +1294,12 @@
           currentUser.roles.forEach((role) => {
             const span = document.createElement("span");
             span.className = "role-badge";
-            span.style.cssText = `border-color:${
-              role.color || "#3b9d6f"
-            };color:${role.color || "#3b9d6f"};background:${
-              role.color || "#3b9d6f"
-            }15;`;
+            span.style.cssText = `border-color:${role.color || "#3b9d6f"};color:${role.color || "#3b9d6f"};background:${role.color || "#3b9d6f"}15;`;
             span.textContent = role.name;
             rolesDiv.appendChild(span);
           });
         } else {
-          rolesDiv.innerHTML =
-            '<span style="color:var(--text-secondary);font-size:12px;">Нет ролей</span>';
+          rolesDiv.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">Нет ролей</span>';
         }
 
         // Права
@@ -1310,38 +1313,32 @@
           accessAdmin: "Доступ к админке",
           canSetUID: "Смена UID",
         };
+        
+        // Используем permissions из currentUser
         let hasPerms = false;
-        if (currentUser.roles) {
-          for (const role of currentUser.roles) {
-            // Запрашиваем права роли
-            fetch("/api/roles")
-              .then((r) => r.json())
-              .then((data) => {
-                const fullRole = (data.roles || []).find(
-                  (r) => r.id === role.id
-                );
-                if (fullRole && fullRole.permissions) {
-                  for (const [key, label] of Object.entries(permNames)) {
-                    if (fullRole.permissions[key]) {
-                      hasPerms = true;
-                      const item = document.createElement("div");
-                      item.style.cssText =
-                        "font-size:12px;color:var(--accent-green);padding:4px 0;";
-                      item.innerHTML = `<i class="fas fa-check-circle"></i> ${label}`;
-                      permsDiv.appendChild(item);
-                    }
-                  }
-                }
-              });
+        if (currentUser.permissions) {
+          for (const [key, label] of Object.entries(permNames)) {
+            if (currentUser.permissions[key]) {
+              hasPerms = true;
+              const item = document.createElement("div");
+              item.style.cssText = "font-size:12px;color:var(--accent-green);padding:4px 0;";
+              item.innerHTML = `<i class="fas fa-check-circle"></i> ${label}`;
+              permsDiv.appendChild(item);
+            }
           }
         }
+        
+        // Владелец (если discordId совпадает с OWNER_ID)
         if (currentUser.discordId === "1227091345806594048") {
           const ownerItem = document.createElement("div");
-          ownerItem.style.cssText =
-            "font-size:12px;color:#fb923c;padding:4px 0;";
-          ownerItem.innerHTML =
-            '<i class="fas fa-crown"></i> Владелец (все права)';
+          ownerItem.style.cssText = "font-size:12px;color:#fb923c;padding:4px 0;";
+          ownerItem.innerHTML = '<i class="fas fa-crown"></i> Владелец (все права)';
           permsDiv.appendChild(ownerItem);
+          hasPerms = true;
+        }
+        
+        if (!hasPerms) {
+          permsDiv.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">Нет прав</span>';
         }
       }
 

@@ -29,7 +29,6 @@ router.get("/me", async (req, res) => {
       .single();
 
     if (!player) {
-      // Определяем провайдера по ID
       const provider = req.user.id.startsWith("google_") ? "google" : "discord";
       const avatar = provider === "google" 
         ? (req.user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(req.user.username)}`)
