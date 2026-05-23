@@ -1394,7 +1394,7 @@
           .getElementById("searchDiscordId")
           .value.trim();
         const gameId = document.getElementById("searchGameId").value.trim();
-        let url = `/api/users?page=${page}&limit=5`;
+        let url = `/api/users?page=${page}&limit=4`;
         if (discordId) url += `&discordId=${discordId}`;
         if (gameId) url += `&uid=${gameId}`;
         fetch(url)
