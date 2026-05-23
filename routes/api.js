@@ -22,32 +22,46 @@ router.get("/me", async (req, res) => {
     });
   }
   try {
-    let { data: player } = await supabase
+    console.log("Fetching player for:", req.user.id);
+    
+    let { data: player, error } = await supabase
       .from("players")
       .select("*")
       .eq("discord_id", req.user.id)
       .single();
 
-    if (!player) {
-      const provider = req.user.id.startsWith("google_") ? "google" : "discord";
-      const avatar = provider === "google" 
-        ? (req.user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(req.user.username)}`)
-        : `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`;
-      
-      const { data: newPlayer } = await supabase
-        .from("players")
-        .insert({
-          discord_id: req.user.id,
-          username: req.user.username,
-          avatar: avatar,
-          provider: provider,
-        })
-        .select()
-        .single();
-      player = newPlayer;
+    if (error) {
+      console.error("Supabase error:", error);
+      // Если пользователь не найден, создаём его
+      if (error.code === 'PGRST116') { // not found
+        const provider = req.user.id.startsWith("google_") ? "google" : "discord";
+        const avatar = provider === "google" 
+          ? (req.user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(req.user.username)}`)
+          : `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`;
+        
+        const { data: newPlayer, error: insertError } = await supabase
+          .from("players")
+          .insert({
+            discord_id: req.user.id,
+            username: req.user.username,
+            avatar: avatar,
+            provider: provider,
+            created_at: new Date().toISOString(),
+            roles: []
+          })
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.error("Insert error in /me:", insertError);
+          return res.status(500).json({ error: insertError.message });
+        }
+        player = newPlayer;
+      } else {
+        return res.status(500).json({ error: error.message });
+      }
     }
 
-    // Собираем permissions из всех ролей пользователя
     const permissions = {
       viewModeration: false,
       interactModeration: false,
