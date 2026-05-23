@@ -102,45 +102,83 @@ router.get("/logout", (req, res, next) => {
   });
 });
 
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get("/google", (req, res, next) => {
+  // Определяем callback URL на основе текущего запроса
+  const callbackURL = `${req.protocol}://${req.get('host')}/auth/google/callback`;
+  
+  const authenticator = passport.authenticate("google", {
+    scope: ["profile", "email"],
+    callbackURL: callbackURL
+  });
+  
+  authenticator(req, res, next);
+});
 
-router.get("/google/callback", passport.authenticate("google", { failureRedirect: "/" }), async (req, res) => {
-  req.session.totpVerified = false;
 
-  try {
-    await axios.post(process.env.WEBHOOK_URL, {
-      embeds: [{
-        title: "✅ Авторизация",
-        description: `**${req.user.username}** вошёл в систему через Google`,
-        color: 0x4285f4,
-        timestamp: new Date().toISOString(),
-      }],
+router.get("/google/callback", (req, res, next) => {
+  // Определяем callback URL на основе текущего запроса
+  const callbackURL = `${req.protocol}://${req.get('host')}/auth/google/callback`;
+  
+  const authenticator = passport.authenticate("google", {
+    failureRedirect: "/",
+    callbackURL: callbackURL
+  }, async (err, user, info) => {
+    if (err || !user) {
+      console.error("Google auth error:", err);
+      return res.redirect("/");
+    }
+    
+    req.logIn(user, async (loginErr) => {
+      if (loginErr) {
+        console.error("Login error:", loginErr);
+        return res.redirect("/");
+      }
+      
+      req.session.totpVerified = false;
+
+      try {
+        await axios.post(process.env.WEBHOOK_URL, {
+          embeds: [{
+            title: "✅ Авторизация",
+            description: `**${user.username}** вошёл в систему через Google`,
+            color: 0x4285f4,
+            timestamp: new Date().toISOString(),
+          }],
+        });
+      } catch (e) { 
+        console.error("Webhook error:", e.message); 
+      }
+
+      // Создаём/обновляем игрока в БД
+      let { data: player } = await supabase
+        .from("players")
+        .select("*")
+        .eq("discord_id", user.id)
+        .single();
+
+      if (!player) {
+        const { data: newPlayer } = await supabase
+          .from("players")
+          .insert({
+            discord_id: user.id,
+            username: user.username,
+            avatar: user.avatar,
+            provider: "google",
+          })
+          .select()
+          .single();
+        player = newPlayer;
+      }
+
+      if (player?.totp_enabled) {
+        return res.redirect("/auth/2fa");
+      }
+      
+      res.redirect(`/${user.id}/dashboard/users`);
     });
-  } catch (e) { console.error("Webhook error:", e.message); }
-
-  // Создаём/обновляем игрока в БД
-  let { data: player } = await supabase
-    .from("players")
-    .select("*")
-    .eq("discord_id", req.user.id)
-    .single();
-
-  if (!player) {
-    const { data: newPlayer } = await supabase
-      .from("players")
-      .insert({
-        discord_id: req.user.id,
-        username: req.user.username,
-        avatar: req.user.avatar,
-        provider: "google",
-      })
-      .select()
-      .single();
-    player = newPlayer;
-  }
-
-  if (player?.totp_enabled) return res.redirect("/auth/2fa");
-  res.redirect(`/${req.user.id}/dashboard/users`);
+  });
+  
+  authenticator(req, res, next);
 });
 
 module.exports = router;
