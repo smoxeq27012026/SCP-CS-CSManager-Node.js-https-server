@@ -689,7 +689,7 @@ router.get("/player/:discordId", isAuthenticated, async (req, res) => {
 });
 
 // --- ПОЛУЧЕНИЕ ПРАВ АДМИНИСТРАТОРА ПО UID ---
-app.get("/api/isadmin/:uid", async (req, res) => {
+router.get("/isadmin/:uid", async (req, res) => {
   const uid = req.params.uid;
   // Поддержка разных форматов URL: /classic/isadmin/12345 или /mediumrp/isadmin/12345
   let server = req.headers['x-server'] || req.query.server || 'CLASSIC';
