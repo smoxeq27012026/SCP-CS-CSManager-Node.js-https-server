@@ -1243,6 +1243,7 @@
         document.getElementById("usersSection").style.display = "none";
         document.getElementById("moderationSection").style.display = "none";
         document.getElementById("settingsSection").style.display = "none";
+        
         if (section === "users") {
           document.getElementById("usersSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Пользователи";
@@ -1250,15 +1251,22 @@
         } else if (section === "moderation") {
           document.getElementById("moderationSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Модерация";
+          
+          // Проверяем права для ТЕКУЩЕГО сервера
+          const hasViewModeration = userPermissions.viewModeration;
+          const hasInteractModeration = userPermissions.interactModeration;
+          
           const modPanel = document.querySelector(".moderation-panel");
           const addBtn = document.querySelector("#moderationSection .button-group");
-          if (modPanel) modPanel.style.display = userPermissions.interactModeration ? "grid" : "none";
-          if (addBtn) addBtn.style.display = userPermissions.interactModeration ? "flex" : "none";
-          if (userPermissions.viewModeration) {
+          
+          if (modPanel) modPanel.style.display = hasInteractModeration ? "grid" : "none";
+          if (addBtn) addBtn.style.display = hasInteractModeration ? "flex" : "none";
+          
+          if (hasViewModeration) {
             loadRetrievals();
           } else {
             const tbody = document.querySelector("#retrievalTable tbody");
-            tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">У вас нет прав на просмотр модерации.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">У вас нет прав на просмотр модерации для выбранного сервера.</td></tr>';
           }
         } else if (section === "settings") {
           document.getElementById("settingsSection").style.display = "block";

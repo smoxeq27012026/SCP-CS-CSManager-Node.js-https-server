@@ -28,7 +28,7 @@ router.get("/me", async (req, res) => {
     });
   }
   try {
-    // Определяем сервер из заголовка или query (можно задать по умолчанию)
+    // Определяем сервер из заголовка или query
     const server = req.headers['x-server'] || req.query.server || 'CLASSIC';
     console.log(`[API] Fetching player ${req.user.id} for server ${server}`);
 
@@ -82,6 +82,7 @@ router.get("/me", async (req, res) => {
           .select("*")
           .eq("id", userRole.id)
           .single();
+        // ВАЖНО: проверяем соответствие сервера
         if (role && role.server === server) {
           if (role.permissions) {
             for (const key of Object.keys(permissions)) {
@@ -90,16 +91,22 @@ router.get("/me", async (req, res) => {
           }
           if (role.ap_access) permissions.apAccess = true;
           if (role.reserved_slot) permissions.reservedSlot = true;
-          if (role.rights && Array.isArray(role.rights)) {
-            rights.push(...role.rights);
+          if (role.rights) {
+            if (Array.isArray(role.rights)) {
+              rights.push(...role.rights);
+            } else if (typeof role.rights === 'string') {
+              rights.push(role.rights);
+            }
           }
           if (role.tag && !tag) tag = role.tag;
         }
       }
     }
+    
     // Убираем дубликаты прав
     rights = [...new Set(rights)];
 
+    // Владелец получает все права
     if (player.discord_id === process.env.OWNER_ID) {
       Object.keys(permissions).forEach(k => permissions[k] = true);
       rights = ["all"];
@@ -681,13 +688,21 @@ router.get("/player/:discordId", isAuthenticated, async (req, res) => {
   }
 });
 
-router.get("/isadmin/:uid", async (req, res) => {
+// --- ПОЛУЧЕНИЕ ПРАВ АДМИНИСТРАТОРА ПО UID ---
+app.get("/api/isadmin/:uid", async (req, res) => {
   const uid = req.params.uid;
-  const server = req.headers['x-server'] || req.query.server || 'CLASSIC';
+  // Поддержка разных форматов URL: /classic/isadmin/12345 или /mediumrp/isadmin/12345
+  let server = req.headers['x-server'] || req.query.server || 'CLASSIC';
+  
+  // Извлекаем сервер из пути если есть (например /classic1/isadmin/12345)
+  const pathMatch = req.path.match(/^\/(classic|mediumrp)/i);
+  if (pathMatch) {
+    server = pathMatch[1].toUpperCase();
+  }
+  
   console.log(`[API] Checking admin rights for UID ${uid} on server ${server}`);
 
   try {
-    // 1. Находим игрока по UID
     const { data: player, error: playerError } = await supabase
       .from("players")
       .select("*")
@@ -711,9 +726,14 @@ router.get("/isadmin/:uid", async (req, res) => {
           .eq("id", userRole.id)
           .single();
 
+        // ВАЖНО: проверяем соответствие сервера
         if (role && !roleError && role.server === server) {
-          if (role.rights && Array.isArray(role.rights)) {
-            rights.push(...role.rights);
+          if (role.rights) {
+            if (Array.isArray(role.rights)) {
+              rights.push(...role.rights);
+            } else if (typeof role.rights === 'string') {
+              rights.push(role.rights);
+            }
           }
           if (role.ap_access) apAccess = true;
           if (role.reserved_slot) reservedSlot = true;
@@ -724,7 +744,6 @@ router.get("/isadmin/:uid", async (req, res) => {
 
     rights = [...new Set(rights)];
 
-    // Владелец получает все права
     if (player.discord_id === process.env.OWNER_ID) {
       rights = ["all"];
       apAccess = true;
@@ -745,6 +764,5 @@ router.get("/isadmin/:uid", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 module.exports = router;

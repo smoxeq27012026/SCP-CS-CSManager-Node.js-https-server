@@ -352,13 +352,22 @@
           for (const [key] of Object.entries(permNames)) {
             if (perms[key]) permList.push(key);
           }
+          // Безопасное отображение прав
+          let rightsDisplay = 'Нет';
+          if (role.rights) {
+            if (Array.isArray(role.rights)) {
+              rightsDisplay = role.rights.join(', ');
+            } else if (typeof role.rights === 'string') {
+              rightsDisplay = role.rights;
+            }
+          }
           card.innerHTML = `
             <div class="role-info">
               <div class="role-color" style="background:${role.color || '#fff'};"></div>
               <div>
                 <div class="role-name" style="color:${role.color || '#fff'}">${escapeHtml(role.name)} (${role.server || 'CLASSIC'})</div>
                 <div class="role-perms">${permList.length ? permList.join(', ') : 'Нет прав'}</div>
-                <div class="role-perms">Игра: ${role.rights ? role.rights.join(', ') : 'Нет'}</div>
+                <div class="role-perms">Игра: ${rightsDisplay}</div>
               </div>
             </div>
             <div style="display:flex;gap:8px;">
