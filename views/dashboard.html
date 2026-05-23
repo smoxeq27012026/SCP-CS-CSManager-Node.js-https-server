@@ -1238,7 +1238,7 @@
         document.getElementById("usersSection").style.display = "none";
         document.getElementById("moderationSection").style.display = "none";
         document.getElementById("settingsSection").style.display = "none";
-
+      
         // Показать нужную
         if (section === "users") {
           document.getElementById("usersSection").style.display = "block";
@@ -1247,14 +1247,26 @@
         } else if (section === "moderation") {
           document.getElementById("moderationSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Модерация";
-          // Показать/скрыть форму и кнопки в зависимости от прав
-          document.getElementById("moderationPanel").style.display = userPermissions.interactModeration ? "block" : "none";
-          loadRetrievals(); // внутри проверим кнопки удаления
+          
+          // Показать/скрыть форму добавления
+          const modPanel = document.querySelector(".moderation-panel");
+          const addBtn = document.querySelector("#moderationSection .button-group");
+          if (modPanel) modPanel.style.display = userPermissions.interactModeration ? "grid" : "none";
+          if (addBtn) addBtn.style.display = userPermissions.interactModeration ? "flex" : "none";
+          
+          // Загружаем розыски с проверкой прав
+          if (userPermissions.viewModeration) {
+            loadRetrievals();
+          } else {
+            const tbody = document.querySelector("#retrievalTable tbody");
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">У вас нет прав на просмотр модерации.</td></tr>';
+          }
         } else if (section === "settings") {
           document.getElementById("settingsSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Настройки";
         }
       }
+      
       function updateProfilePopup() {
         if (!currentUser) return;
         document.getElementById("popupAvatar").src = currentUser.avatar;
@@ -1382,7 +1394,7 @@
           .getElementById("searchDiscordId")
           .value.trim();
         const gameId = document.getElementById("searchGameId").value.trim();
-        let url = `/api/users?page=${page}&limit=5`;
+        let url = `/api/users?page=${page}&limit=4`;
         if (discordId) url += `&discordId=${discordId}`;
         if (gameId) url += `&uid=${gameId}`;
         fetch(url)
@@ -1434,7 +1446,7 @@
         }
         pag.appendChild(prevBtn);
 
-        const maxVisible = 5;
+        const maxVisible = 4;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
         let endPage = Math.min(totalPages, startPage + maxVisible - 1);
         if (endPage - startPage < maxVisible - 1)
