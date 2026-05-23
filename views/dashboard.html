@@ -1184,6 +1184,8 @@
 
       let currentUser = null;
       let userPermissions = {};
+      let currentServer = localStorage.getItem('selectedServer') || 'CLASSIC';
+      let refreshUserDataTimeout = null;
 
       fetch("/api/me")
         .then((r) => r.json())
@@ -1204,25 +1206,20 @@
         })
         .catch(() => (window.location.href = "/auth/login"));
 
-
+      let currentSection = "users";
 
       function buildNavigation() {
         const navMenu = document.querySelector(".nav-menu");
         navMenu.innerHTML = "";
-
-        // Пользователи – доступно всем авторизованным
         addNavItem("users", "Пользователи", "fa-users", true);
-
-        // Модерация – только при viewModeration
         if (userPermissions.viewModeration) {
           addNavItem("moderation", "Модерация", "fa-gavel", false);
         }
-
-        // Настройки – если есть право accessSettings
         if (userPermissions.accessSettings || userPermissions.accessAdmin) {
           addNavItem("settings", "Настройки", "fa-cog", false);
         }
       }
+
 
       function addNavItem(target, text, icon, isActive) {
         const navMenu = document.querySelector(".nav-menu");
@@ -1240,13 +1237,12 @@
         navMenu.appendChild(a);
       }
 
+
       function showSection(section) {
-        // Скрыть все секции
+        currentSection = section;
         document.getElementById("usersSection").style.display = "none";
         document.getElementById("moderationSection").style.display = "none";
         document.getElementById("settingsSection").style.display = "none";
-      
-        // Показать нужную
         if (section === "users") {
           document.getElementById("usersSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Пользователи";
@@ -1254,14 +1250,10 @@
         } else if (section === "moderation") {
           document.getElementById("moderationSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Модерация";
-          
-          // Показать/скрыть форму добавления
           const modPanel = document.querySelector(".moderation-panel");
           const addBtn = document.querySelector("#moderationSection .button-group");
           if (modPanel) modPanel.style.display = userPermissions.interactModeration ? "grid" : "none";
           if (addBtn) addBtn.style.display = userPermissions.interactModeration ? "flex" : "none";
-          
-          // Загружаем розыски с проверкой прав
           if (userPermissions.viewModeration) {
             loadRetrievals();
           } else {
@@ -1278,18 +1270,9 @@
         if (!currentUser) return;
         document.getElementById("popupAvatar").src = currentUser.avatar;
         document.getElementById("popupUsername").textContent = currentUser.username;
-        
-        // 🔥 ИСПРАВЛЕНО: определяем провайдера и показываем правильную иконку
         const isGoogle = currentUser.discordId?.startsWith('google_');
-        const providerIcon = isGoogle 
-          ? '<i class="fab fa-google" style="color:#4285f4;"></i> Google' 
-          : '<i class="fab fa-discord" style="color:#5865F2;"></i> Discord';
-        
-        // Показываем ID без префикса для Google
-        const displayId = isGoogle 
-          ? currentUser.discordId?.replace('google_', '') 
-          : currentUser.discordId;
-        
+        const providerIcon = isGoogle ? '<i class="fab fa-google" style="color:#4285f4;"></i> Google' : '<i class="fab fa-discord" style="color:#5865F2;"></i> Discord';
+        const displayId = isGoogle ? currentUser.discordId?.replace('google_', '') : currentUser.discordId;
         document.getElementById("popupDiscordId").innerHTML = `${providerIcon} | ID: ${displayId || '—'}`;
         document.getElementById("popupGameId").textContent = currentUser.uid || "—";
 
@@ -1307,7 +1290,6 @@
           rolesDiv.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">Нет ролей</span>';
         }
 
-        // Права
         const permsDiv = document.getElementById("popupPermissions");
         permsDiv.innerHTML = "";
         const permNames = {
@@ -1318,8 +1300,6 @@
           accessAdmin: "Доступ к админке",
           canSetUID: "Смена UID",
         };
-        
-        // Используем permissions из currentUser
         let hasPerms = false;
         if (currentUser.permissions) {
           for (const [key, label] of Object.entries(permNames)) {
@@ -1332,8 +1312,6 @@
             }
           }
         }
-        
-        // Владелец (если discordId совпадает с OWNER_ID)
         if (currentUser.discordId === "1227091345806594048") {
           const ownerItem = document.createElement("div");
           ownerItem.style.cssText = "font-size:12px;color:#fb923c;padding:4px 0;";
@@ -1341,11 +1319,11 @@
           permsDiv.appendChild(ownerItem);
           hasPerms = true;
         }
-        
         if (!hasPerms) {
           permsDiv.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">Нет прав</span>';
         }
       }
+
 
       document.getElementById("currentDate").textContent =
         new Date().toLocaleDateString("ru-RU", {
@@ -1393,6 +1371,44 @@
       function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("active");
       }
+
+      function setupServerDropdown() {
+        const selectedBtn = document.getElementById("selectedServerBtn");
+        const dropdown = document.getElementById("dropdownOptions");
+        const selectedNameSpan = document.getElementById("selectedServerName");
+        const options = document.querySelectorAll(".dropdown-option");
+
+        selectedBtn.addEventListener("click", () => {
+          dropdown.classList.toggle("show");
+        });
+
+        options.forEach(opt => {
+          opt.addEventListener("click", () => {
+            const server = opt.getAttribute("data-server");
+            currentServer = server;
+            localStorage.setItem('selectedServer', server);
+            selectedNameSpan.textContent = server;
+            dropdown.classList.remove("show");
+            if (refreshUserDataTimeout) clearTimeout(refreshUserDataTimeout);
+            refreshUserDataTimeout = setTimeout(() => {
+              refreshUserData();
+            }, 200);
+          });
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!selectedBtn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove("show");
+          }
+        });
+      }
+
+      // Инициализация
+      document.addEventListener("DOMContentLoaded", () => {
+        setupServerDropdown();
+        refreshUserData();
+      });
+
 
       function searchUsers(page = 1) {
         const discordId = document
@@ -1807,6 +1823,34 @@
             }
           });
       }
+
+      async function refreshUserData() {
+        try {
+          const res = await fetch(`/api/me?server=${currentServer}`);
+          const data = await res.json();
+          if (data.discordId === "guest") {
+            window.location.href = "/auth/login";
+            return;
+          }
+          currentUser = data;
+          userPermissions = data.permissions || {};
+          document.getElementById("userAvatar").src = data.avatar;
+          document.getElementById("userName").textContent = data.username;
+          const isGoogle = data.discordId?.startsWith('google_');
+          const displayId = isGoogle ? data.discordId.replace('google_', '') : data.discordId;
+          document.getElementById("userDiscordId").innerHTML = isGoogle ? `<i class="fab fa-google" style="color:#4285f4;"></i> ${displayId}` : `@${displayId}`;
+          updateProfilePopup();
+          buildNavigation();
+          showSection(currentSection);
+        } catch (err) {
+          console.error("refreshUserData error:", err);
+          if (err.message?.includes("401") || err.message?.includes("403")) {
+            window.location.href = "/auth/login";
+          }
+        }
+      }
+
+
 
       let toastCount = 0;
       let toasts = [];

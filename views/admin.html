@@ -150,70 +150,98 @@
 <div class="container">
   <h1><i class="fas fa-crown"></i> Административная панель</h1>
 
-  <!-- Поиск пользователей -->
   <div class="content-card">
     <h2 class="card-title"><i class="fas fa-search"></i> Быстрый поиск пользователей</h2>
     <div class="form-group autocomplete-wrap">
-      <label>Введите ник или Discord ID</label>
+      <label>Введите ник или ID</label>
       <input type="text" id="searchUser" class="form-input" placeholder="Начните вводить..." autocomplete="off" />
       <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
     </div>
     <div id="selectedUserCard" style="margin-top: 20px;"></div>
   </div>
 
-  <!-- Создание роли -->
   <div class="content-card">
     <h2 class="card-title"><i class="fas fa-plus-circle"></i> Создать роль</h2>
-    <div class="form-grid">
+    <div class="form-grid three">
       <div class="form-group"><label>Название роли</label><input type="text" id="roleName" class="form-input" placeholder="Например: Модератор" /></div>
       <div class="form-group"><label>Цвет роли</label><input type="color" id="roleColor" class="form-input" value="#3b9d6f" style="height:48px;padding:4px;" /></div>
+      <div class="form-group">
+        <label>Сервер</label>
+        <select id="roleServer" class="form-input">
+          <option value="CLASSIC">CLASSIC</option>
+          <option value="MEDIUMRP">MEDIUMRP</option>
+        </select>
+      </div>
     </div>
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права доступа:</p>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права доступа (Web):</p>
     <div class="permissions-grid" id="permissionsCheckboxes"></div>
     <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Игровые привилегии:</p>
-    <div class="permissions-grid" id="gamePrivilegesCheckboxes"></div>
+    <div class="form-group" style="margin-bottom:16px;">
+        <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="apAccessCheckbox" /> AP Access (админ-панель в игре)
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="reservedSlotCheckbox" /> Reserved Slot (слот)
+        </label>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права в игре (Rights):</p>
+    <div class="permissions-grid" id="gameRightsCheckboxes"></div>
+    <div class="form-group">
+        <label>Tag (цветной тег)</label>
+        <input type="text" id="roleTag" class="form-input" placeholder="Например: <color=#FF0000>ADMIN</color>" />
+    </div>
     <button class="btn btn-primary" onclick="createRole()"><i class="fas fa-save"></i> Создать роль</button>
   </div>
 
-  <!-- Назначение роли пользователю -->
   <div class="content-card">
     <h2 class="card-title"><i class="fas fa-user-tag"></i> Назначить роль</h2>
     <div class="form-grid three">
-      <div class="form-group"><label>Discord ID</label><input type="text" id="assignDiscordId" class="form-input" placeholder="1227091345806594048" /></div>
+      <div class="form-group"><label>ID пользователя</label><input type="text" id="assignDiscordId" class="form-input" placeholder="1227091345806594048 или google_..." /></div>
       <div class="form-group"><label>Роль</label><select id="assignRole" class="form-input"><option value="">Выберите роль...</option></select></div>
       <div class="form-group"><label>UID (если есть)</label><input type="text" id="assignUid" class="form-input" placeholder="12345" /></div>
     </div>
     <button class="btn btn-primary" onclick="assignRole()"><i class="fas fa-check"></i> Назначить</button>
   </div>
 
-  <!-- Список ролей -->
   <div class="content-card">
     <h2 class="card-title"><i class="fas fa-list"></i> Существующие роли</h2>
     <div class="role-list" id="roleList"><p style="color:var(--text-secondary)">Загрузка...</p></div>
   </div>
 </div>
 
-<!-- Модальное окно редактирования роли -->
 <div class="modal" id="editRoleModal">
   <div class="modal-content">
     <div class="modal-header">
       <h3>Редактирование роли</h3>
       <button class="close-modal" onclick="closeEditRoleModal()">×</button>
     </div>
-    <div class="form-grid">
+    <div class="form-grid three">
       <div class="form-group"><label>Название</label><input type="text" id="editRoleName" class="form-input" /></div>
       <div class="form-group"><label>Цвет</label><input type="color" id="editRoleColor" class="form-input" value="#3b9d6f" style="height:48px;" /></div>
+      <div class="form-group"><label>Сервер</label><select id="editRoleServer" class="form-input"><option value="CLASSIC">CLASSIC</option><option value="MEDIUMRP">MEDIUMRP</option></select></div>
     </div>
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права доступа:</p>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права доступа (Web):</p>
     <div class="permissions-grid" id="editPermissionsCheckboxes"></div>
     <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Игровые привилегии:</p>
-    <div class="permissions-grid" id="editGamePrivileges"></div>
+    <div class="form-group" style="margin-bottom:16px;">
+        <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="editApAccessCheckbox" /> AP Access (админ-панель в игре)
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="editReservedSlotCheckbox" /> Reserved Slot (слот)
+        </label>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Права в игре (Rights):</p>
+    <div class="permissions-grid" id="editGameRightsCheckboxes"></div>
+    <div class="form-group">
+        <label>Tag (цветной тег)</label>
+        <input type="text" id="editRoleTag" class="form-input" />
+    </div>
     <input type="hidden" id="editRoleId" />
     <button class="btn btn-primary" onclick="updateRole()"><i class="fas fa-save"></i> Сохранить</button>
   </div>
 </div>
 
-<!-- Модальное окно пользователей роли -->
 <div class="modal" id="roleUsersModal">
   <div class="modal-content" style="max-width:700px">
     <div class="modal-header">
@@ -231,7 +259,7 @@
     div.textContent = text;
     return div.innerHTML;
   }
-  function showToast(msg, type) {
+  function showToast(msg, type = "info") {
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.style.cssText = `position:fixed; right:24px; top:24px; background:var(--bg-card); border:1px solid var(--border-color); padding:16px 20px; border-radius:12px; z-index:9999; color:${type==="error"?"#ef4444":"#3b9d6f"};`;
@@ -248,14 +276,14 @@
     accessAdmin: "Доступ к админ-панели",
     canSetUID: "Может устанавливать UID"
   };
-  const gamePrivileges = {
-    apAccess: "AP Access (доступ к админ-панели в игре)",
-    reservedSlot: "Reserved Slot (зарезервированный слот)"
-  };
+  const gameRights = [
+    "giveitem", "forceclass", "teleport", "dummies", 
+    "bankick", "other", "effects", "aces", "adminmessage"
+  ];
 
-  // Динамическое построение чекбоксов
   function buildCheckboxes(containerId, values = {}) {
     const container = document.getElementById(containerId);
+    if (!container) return;
     container.innerHTML = '';
     for (const [key, label] of Object.entries(permNames)) {
       const div = document.createElement('div');
@@ -264,232 +292,261 @@
       container.appendChild(div);
     }
   }
-  function buildGameCheckboxes(containerId, values = {}) {
+  function buildGameRightsCheckboxes(containerId, selectedRights = []) {
     const container = document.getElementById(containerId);
+    if (!container) return;
     container.innerHTML = '';
-    for (const [key, label] of Object.entries(gamePrivileges)) {
+    for (const right of gameRights) {
       const div = document.createElement('div');
       div.className = 'checkbox-item';
-      div.innerHTML = `<input type="checkbox" id="game_${key}" ${values[key] ? 'checked' : ''} /><label>${label}</label>`;
+      div.innerHTML = `<input type="checkbox" id="right_${right}" ${selectedRights.includes(right) ? 'checked' : ''} /><label>${right}</label>`;
       container.appendChild(div);
     }
   }
-  // Инициализация
-  buildCheckboxes('permissionsCheckboxes');
-  buildGameCheckboxes('gamePrivilegesCheckboxes');
-
-  // ---------- Работа с ролями ----------
-  function loadRoles() {
-    fetch("/api/roles")
-      .then(r => r.json())
-      .then(data => {
-        const roleList = document.getElementById("roleList");
-        roleList.innerHTML = "";
-        if (!data.roles || data.roles.length === 0) {
-          roleList.innerHTML = '<p style="color:var(--text-secondary)">Роли не созданы.</p>';
-        } else {
-          data.roles.forEach(role => {
-            const card = document.createElement("div");
-            card.className = "role-card";
-            const perms = role.permissions || {};
-            const permList = [];
-            for (const [key, label] of Object.entries(permNames)) {
-              if (perms[key]) permList.push(label.split(' ')[0]); // коротко
-            }
-            card.innerHTML = `
-              <div class="role-info">
-                <div class="role-color" style="background:${role.color || '#fff'};"></div>
-                <div>
-                  <div class="role-name" style="color:${role.color || '#fff'}">${escapeHtml(role.name)}</div>
-                  <div class="role-perms">${permList.length ? permList.join(', ') : 'Нет прав'}</div>
-                </div>
-              </div>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-secondary btn-sm" onclick="editRole('${role.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-secondary btn-sm" onclick="showRoleUsers('${role.id}', '${escapeHtml(role.name)}')"><i class="fas fa-users"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="deleteRole('${role.id}')"><i class="fas fa-trash"></i></button>
-              </div>
-            `;
-            roleList.appendChild(card);
-          });
-        }
-        // Обновить выпадающий список назначения
-        const assignRole = document.getElementById("assignRole");
-        assignRole.innerHTML = '<option value="">Выберите роль...</option>';
-        (data.roles || []).forEach(role => {
-          assignRole.innerHTML += `<option value="${role.id}">${escapeHtml(role.name)}</option>`;
-        });
-      });
+  function getSelectedGameRights() {
+    const selected = [];
+    for (const right of gameRights) {
+      const cb = document.getElementById(`right_${right}`);
+      if (cb && cb.checked) selected.push(right);
+    }
+    return selected;
+  }
+  function getSelectedGameRightsFromEdit() {
+    const selected = [];
+    for (const right of gameRights) {
+      const cb = document.getElementById(`edit_right_${right}`);
+      if (cb && cb.checked) selected.push(right);
+    }
+    return selected;
   }
 
-  function createRole() {
+  function buildGameRightsCheckboxesForEdit(selectedRights = []) {
+    const container = document.getElementById("editGameRightsCheckboxes");
+    if (!container) return;
+    container.innerHTML = '';
+    for (const right of gameRights) {
+      const div = document.createElement('div');
+      div.className = 'checkbox-item';
+      div.innerHTML = `<input type="checkbox" id="edit_right_${right}" ${selectedRights.includes(right) ? 'checked' : ''} /><label>${right}</label>`;
+      container.appendChild(div);
+    }
+  }
+
+  buildCheckboxes('permissionsCheckboxes');
+  buildGameRightsCheckboxes('gameRightsCheckboxes');
+
+  async function loadRoles() {
+    try {
+      const res = await fetch("/api/roles");
+      const data = await res.json();
+      const roleList = document.getElementById("roleList");
+      roleList.innerHTML = "";
+      if (!data.roles || data.roles.length === 0) {
+        roleList.innerHTML = '<p style="color:var(--text-secondary)">Роли не созданы.</p>';
+      } else {
+        data.roles.forEach(role => {
+          const card = document.createElement("div");
+          card.className = "role-card";
+          const perms = role.permissions || {};
+          const permList = [];
+          for (const [key] of Object.entries(permNames)) {
+            if (perms[key]) permList.push(key);
+          }
+          card.innerHTML = `
+            <div class="role-info">
+              <div class="role-color" style="background:${role.color || '#fff'};"></div>
+              <div>
+                <div class="role-name" style="color:${role.color || '#fff'}">${escapeHtml(role.name)} (${role.server || 'CLASSIC'})</div>
+                <div class="role-perms">${permList.length ? permList.join(', ') : 'Нет прав'}</div>
+                <div class="role-perms">Игра: ${role.rights ? role.rights.join(', ') : 'Нет'}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="editRole('${role.id}')"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-secondary btn-sm" onclick="showRoleUsers('${role.id}', '${escapeHtml(role.name)}')"><i class="fas fa-users"></i></button>
+              <button class="btn btn-danger btn-sm" onclick="deleteRole('${role.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+          `;
+          roleList.appendChild(card);
+        });
+      }
+      const assignRole = document.getElementById("assignRole");
+      assignRole.innerHTML = '<option value="">Выберите роль...</option>';
+      (data.roles || []).forEach(role => {
+        assignRole.innerHTML += `<option value="${role.id}">${escapeHtml(role.name)} (${role.server || 'CLASSIC'})</option>`;
+      });
+    } catch (err) {
+      console.error("loadRoles error:", err);
+      showToast("Ошибка загрузки ролей", "error");
+    }
+  }
+
+  async function createRole() {
     const name = document.getElementById("roleName").value.trim();
     const color = document.getElementById("roleColor").value;
+    const server = document.getElementById("roleServer").value;
+    const tag = document.getElementById("roleTag").value.trim();
     if (!name) return showToast("Введите название роли", "error");
 
     const permissions = {};
     for (const key of Object.keys(permNames)) {
       permissions[key] = document.getElementById(`perm_${key}`).checked;
     }
-    const apAccess = document.getElementById(`game_apAccess`).checked;
-    const reservedSlot = document.getElementById(`game_reservedSlot`).checked;
+    const apAccess = document.getElementById("apAccessCheckbox").checked;
+    const reservedSlot = document.getElementById("reservedSlotCheckbox").checked;
+    const rights = getSelectedGameRights();
 
-    fetch("/api/roles", {
+    const res = await fetch("/api/roles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot })
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (d.success) {
-        showToast("Роль создана!", "success");
-        loadRoles();
-        document.getElementById("roleName").value = "";
-        document.querySelectorAll('#permissionsCheckboxes input[type="checkbox"], #gamePrivilegesCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
-      } else {
-        showToast("Ошибка: " + (d.error || ""), "error");
-      }
+      body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot, rights, tag, server })
     });
+    const d = await res.json();
+    if (d.success) {
+      showToast("Роль создана!", "success");
+      loadRoles();
+      document.getElementById("roleName").value = "";
+      document.getElementById("roleTag").value = "";
+      document.querySelectorAll('#permissionsCheckboxes input[type="checkbox"], #gameRightsCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.getElementById("apAccessCheckbox").checked = false;
+      document.getElementById("reservedSlotCheckbox").checked = false;
+    } else {
+      showToast("Ошибка: " + (d.error || ""), "error");
+    }
   }
 
-  // Редактирование роли
-  function editRole(roleId) {
-    fetch("/api/roles")
-      .then(r => r.json())
-      .then(data => {
-        const role = (data.roles || []).find(r => r.id == roleId);
-        if (!role) return showToast("Роль не найдена", "error");
-        document.getElementById("editRoleId").value = role.id;
-        document.getElementById("editRoleName").value = role.name;
-        document.getElementById("editRoleColor").value = role.color || "#3b9d6f";
-        buildCheckboxes('editPermissionsCheckboxes', role.permissions || {});
-        buildGameCheckboxes('editGamePrivileges', { apAccess: role.ap_access || false, reservedSlot: role.reserved_slot || false });
-        document.getElementById("editRoleModal").classList.add("active");
-      });
+  async function editRole(roleId) {
+    const res = await fetch("/api/roles");
+    const data = await res.json();
+    const role = (data.roles || []).find(r => r.id == roleId);
+    if (!role) return showToast("Роль не найдена", "error");
+    document.getElementById("editRoleId").value = role.id;
+    document.getElementById("editRoleName").value = role.name;
+    document.getElementById("editRoleColor").value = role.color || "#3b9d6f";
+    document.getElementById("editRoleServer").value = role.server || "CLASSIC";
+    document.getElementById("editRoleTag").value = role.tag || "";
+    const perms = role.permissions || {};
+    for (const key of Object.keys(permNames)) {
+      const cb = document.getElementById(`perm_${key}`);
+      if (cb) cb.checked = !!perms[key];
+    }
+    document.getElementById("editApAccessCheckbox").checked = !!role.ap_access;
+    document.getElementById("editReservedSlotCheckbox").checked = !!role.reserved_slot;
+    buildGameRightsCheckboxesForEdit(role.rights || []);
+    document.getElementById("editRoleModal").classList.add("active");
   }
 
-  function updateRole() {
+  async function updateRole() {
     const id = document.getElementById("editRoleId").value;
     const name = document.getElementById("editRoleName").value.trim();
     const color = document.getElementById("editRoleColor").value;
+    const server = document.getElementById("editRoleServer").value;
+    const tag = document.getElementById("editRoleTag").value.trim();
     if (!name) return showToast("Введите название", "error");
 
     const permissions = {};
     for (const key of Object.keys(permNames)) {
-      const el = document.getElementById(`perm_${key}`);
-      if (el) permissions[key] = el.checked;
+      const cb = document.getElementById(`perm_${key}`);
+      if (cb) permissions[key] = cb.checked;
     }
-    const apAccess = document.getElementById(`game_apAccess`)?.checked || false;
-    const reservedSlot = document.getElementById(`game_reservedSlot`)?.checked || false;
+    const apAccess = document.getElementById("editApAccessCheckbox").checked;
+    const reservedSlot = document.getElementById("editReservedSlotCheckbox").checked;
+    const rights = getSelectedGameRightsFromEdit();
 
-    fetch(`/api/roles/${id}`, {
+    const res = await fetch(`/api/roles/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot })
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (d.success) {
-        showToast("Роль обновлена!", "success");
-        closeEditRoleModal();
-        loadRoles();
-      } else {
-        showToast("Ошибка: " + (d.error || ""), "error");
-      }
+      body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot, rights, tag, server })
     });
+    const d = await res.json();
+    if (d.success) {
+      showToast("Роль обновлена!", "success");
+      closeEditRoleModal();
+      loadRoles();
+    } else {
+      showToast("Ошибка: " + (d.error || ""), "error");
+    }
   }
 
   function closeEditRoleModal() {
     document.getElementById("editRoleModal").classList.remove("active");
   }
 
-  function deleteRole(roleId) {
+  async function deleteRole(roleId) {
     if (!confirm("Удалить роль? Это также удалит её у всех пользователей.")) return;
-    fetch(`/api/roles/${roleId}`, { method: "DELETE" })
-      .then(r => r.json())
-      .then(d => {
-        if (d.success) { showToast("Роль удалена", "success"); loadRoles(); }
-        else showToast("Ошибка: " + (d.error || ""), "error");
-      });
+    const res = await fetch(`/api/roles/${roleId}`, { method: "DELETE" });
+    const d = await res.json();
+    if (d.success) { showToast("Роль удалена", "success"); loadRoles(); }
+    else showToast("Ошибка: " + (d.error || ""), "error");
   }
 
-  // ---------- Управление пользователями роли ----------
-  function showRoleUsers(roleId, roleName) {
+  async function showRoleUsers(roleId, roleName) {
     document.getElementById("roleUsersTitle").textContent = roleName;
-    fetch(`/api/roles/${roleId}/users`)
-      .then(r => r.json())
-      .then(data => {
-        const list = document.getElementById("roleUsersList");
-        list.innerHTML = "";
-        if (!data.users || data.users.length === 0) {
-          list.innerHTML = '<p style="color:var(--text-secondary)">Нет пользователей с этой ролью.</p>';
-        } else {
-          data.users.forEach(user => {
-            const div = document.createElement("div");
-            div.className = "user-card";
-            div.innerHTML = `
-              <div style="display:flex;align-items:center;gap:12px;">
-                <img src="${user.avatar}" style="width:40px;height:40px;border-radius:50%;" />
-                <div>
-                  <div style="font-weight:600;">${escapeHtml(user.username)}</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">ID: ${user.discordId}</div>
-                </div>
-              </div>
-              <button class="btn btn-danger btn-sm" onclick="removeRoleFromUser('${user.discordId}', '${roleId}')"><i class="fas fa-user-minus"></i> Снять роль</button>
-            `;
-            list.appendChild(div);
-          });
-        }
-        document.getElementById("roleUsersModal").classList.add("active");
+    const res = await fetch(`/api/roles/${roleId}/users`);
+    const data = await res.json();
+    const list = document.getElementById("roleUsersList");
+    list.innerHTML = "";
+    if (!data.users || data.users.length === 0) {
+      list.innerHTML = '<p style="color:var(--text-secondary)">Нет пользователей с этой ролью.</p>';
+    } else {
+      data.users.forEach(user => {
+        const div = document.createElement("div");
+        div.className = "user-card";
+        div.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${user.avatar}" style="width:40px;height:40px;border-radius:50%;" />
+            <div>
+              <div style="font-weight:600;">${escapeHtml(user.username)}</div>
+              <div style="font-size:12px;color:var(--text-secondary);">ID: ${user.discordId}</div>
+            </div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="removeRoleFromUser('${user.discordId}', '${roleId}')"><i class="fas fa-user-minus"></i> Снять роль</button>
+        `;
+        list.appendChild(div);
       });
+    }
+    document.getElementById("roleUsersModal").classList.add("active");
   }
 
   function closeRoleUsersModal() {
     document.getElementById("roleUsersModal").classList.remove("active");
   }
 
-  function removeRoleFromUser(discordId, roleId) {
+  async function removeRoleFromUser(discordId, roleId) {
     if (!confirm("Снять эту роль у пользователя?")) return;
-    fetch(`/api/players/${discordId}/roles/${roleId}`, { method: "DELETE" })
-      .then(r => r.json())
-      .then(d => {
-        if (d.success) {
-          showToast("Роль снята", "success");
-          // Обновить список пользователей роли (перезапросить)
-          const roleName = document.getElementById("roleUsersTitle").textContent;
-          showRoleUsers(roleId, roleName);
-          loadRoles(); // на случай если в списке ролей что-то изменится
-        } else {
-          showToast("Ошибка: " + (d.error || ""), "error");
-        }
-      });
+    const res = await fetch(`/api/players/${discordId}/roles/${roleId}`, { method: "DELETE" });
+    const d = await res.json();
+    if (d.success) {
+      showToast("Роль снята", "success");
+      const roleName = document.getElementById("roleUsersTitle").textContent;
+      showRoleUsers(roleId, roleName);
+      loadRoles();
+    } else {
+      showToast("Ошибка: " + (d.error || ""), "error");
+    }
   }
 
-  // ---------- Назначение роли ----------
-  function assignRole() {
+  async function assignRole() {
     const discordId = document.getElementById("assignDiscordId").value.trim();
     const roleId = document.getElementById("assignRole").value;
     const uid = document.getElementById("assignUid").value.trim();
-    if (!discordId || !roleId) return showToast("Заполните Discord ID и выберите роль", "error");
-    fetch("/api/players/assign-role", {
+    if (!discordId || !roleId) return showToast("Заполните ID пользователя и выберите роль", "error");
+    const res = await fetch("/api/players/assign-role", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ discordId, roleId, uid: uid || null })
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (d.success) {
-        showToast("Роль назначена!", "success");
-        document.getElementById("assignDiscordId").value = "";
-        document.getElementById("assignUid").value = "";
-        loadRoles();
-      } else {
-        showToast("Ошибка: " + (d.error || ""), "error");
-      }
     });
+    const d = await res.json();
+    if (d.success) {
+      showToast("Роль назначена!", "success");
+      document.getElementById("assignDiscordId").value = "";
+      document.getElementById("assignUid").value = "";
+      loadRoles();
+    } else {
+      showToast("Ошибка: " + (d.error || ""), "error");
+    }
   }
 
-  // ---------- Поиск пользователей с автодополнением ----------
   const searchInput = document.getElementById("searchUser");
   const dropdown = document.getElementById("autocompleteDropdown");
   let searchTimeout;
@@ -501,29 +558,31 @@
       dropdown.style.display = "none";
       return;
     }
-    searchTimeout = setTimeout(() => {
-      fetch(`/api/users/search?q=${encodeURIComponent(query)}`)
-        .then(r => r.json())
-        .then(data => {
-          dropdown.innerHTML = "";
-          if (!data.users || data.users.length === 0) {
-            dropdown.innerHTML = '<div class="autocomplete-item" style="color:var(--text-secondary);">Ничего не найдено</div>';
-            dropdown.style.display = "block";
-            return;
-          }
-          data.users.forEach(user => {
-            const item = document.createElement("div");
-            item.className = "autocomplete-item";
-            item.innerHTML = `<img src="${user.avatar}" /><div><div style="font-weight:600;">${escapeHtml(user.username)}</div><div style="font-size:12px;color:var(--text-secondary);">${user.discordId}</div></div>`;
-            item.addEventListener("click", () => {
-              selectUser(user);
-              dropdown.style.display = "none";
-              searchInput.value = user.username;
-            });
-            dropdown.appendChild(item);
-          });
+    searchTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        dropdown.innerHTML = "";
+        if (!data.users || data.users.length === 0) {
+          dropdown.innerHTML = '<div class="autocomplete-item" style="color:var(--text-secondary);">Ничего не найдено</div>';
           dropdown.style.display = "block";
+          return;
+        }
+        data.users.forEach(user => {
+          const item = document.createElement("div");
+          item.className = "autocomplete-item";
+          item.innerHTML = `<img src="${user.avatar}" /><div><div style="font-weight:600;">${escapeHtml(user.username)}</div><div style="font-size:12px;color:var(--text-secondary);">${user.discordId}</div></div>`;
+          item.addEventListener("click", () => {
+            selectUser(user);
+            dropdown.style.display = "none";
+            searchInput.value = user.username;
+          });
+          dropdown.appendChild(item);
         });
+        dropdown.style.display = "block";
+      } catch (err) {
+        console.error(err);
+      }
     }, 300);
   });
 
@@ -531,35 +590,32 @@
     if (!e.target.closest(".autocomplete-wrap")) dropdown.style.display = "none";
   });
 
-  function selectUser(user) {
+  async function selectUser(user) {
     const card = document.getElementById("selectedUserCard");
-    // Получаем роли пользователя
-    fetch(`/api/me?userId=${user.discordId}`) // но /me возвращает текущего, лучше использовать admin/users?discordId=...
-      .then(() => {}) // упростим: сделаем запрос к /api/admin/users?discordId=
-    fetch(`/api/admin/users?discordId=${user.discordId}`)
-      .then(r => r.json())
-      .then(data => {
-        const u = (data.users || [])[0] || user;
-        const roles = u.roles || [];
-        const rolesHtml = roles.length ? roles.map(r => `<span style="display:inline-block;padding:4px 10px;border-radius:8px;background:${r.color}20;color:${r.color};border:1px solid ${r.color};margin-right:6px;">${escapeHtml(r.name)}</span>`).join('') : '<span style="color:var(--text-secondary);">Нет ролей</span>';
-        card.innerHTML = `
-          <div class="user-card" style="display:flex;align-items:center;gap:16px;">
-            <img src="${u.avatar}" style="width:56px;height:56px;border-radius:50%;" />
-            <div style="flex:1;">
-              <div style="font-size:18px;font-weight:600;">${escapeHtml(u.username)}</div>
-              <div style="font-size:13px;color:var(--text-secondary);">Discord ID: ${u.discordId}</div>
-              <div style="margin-top:8px;">${rolesHtml}</div>
-            </div>
+    try {
+      const res = await fetch(`/api/admin/users?discordId=${user.discordId}`);
+      const data = await res.json();
+      const u = (data.users || [])[0] || user;
+      const roles = u.roles || [];
+      const rolesHtml = roles.length ? roles.map(r => `<span style="display:inline-block;padding:4px 10px;border-radius:8px;background:${r.color}20;color:${r.color};border:1px solid ${r.color};margin-right:6px;">${escapeHtml(r.name)}</span>`).join('') : '<span style="color:var(--text-secondary);">Нет ролей</span>';
+      card.innerHTML = `
+        <div class="user-card" style="display:flex;align-items:center;gap:16px;">
+          <img src="${u.avatar}" style="width:56px;height:56px;border-radius:50%;" />
+          <div style="flex:1;">
+            <div style="font-size:18px;font-weight:600;">${escapeHtml(u.username)}</div>
+            <div style="font-size:13px;color:var(--text-secondary);">ID: ${u.discordId}</div>
+            <div style="margin-top:8px;">${rolesHtml}</div>
           </div>
-        `;
-      });
+        </div>
+      `;
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  // Закрытие модалок по клику вне
   document.getElementById("editRoleModal").addEventListener("click", (e) => { if (e.target.id === "editRoleModal") closeEditRoleModal(); });
   document.getElementById("roleUsersModal").addEventListener("click", (e) => { if (e.target.id === "roleUsersModal") closeRoleUsersModal(); });
 
-  // Старт
   loadRoles();
 </script>
 </body>

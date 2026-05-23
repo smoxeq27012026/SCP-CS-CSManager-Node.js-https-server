@@ -8,6 +8,8 @@ const {
   canDeleteModerationEntries
 } = require("../middleware/auth");
 const supabase = require("../config/supabase");
+const crypto = require("crypto");
+const speakeasy = require("speakeasy");
 
 router.get("/me", async (req, res) => {
   if (!req.user) {
@@ -18,50 +20,48 @@ router.get("/me", async (req, res) => {
       uid: null,
       roles: [],
       permissions: {},
-      provider: null
+      provider: null,
+      rights: [],
+      apAccess: false,
+      reservedSlot: false,
+      tag: ""
     });
   }
   try {
-    console.log("Fetching player for:", req.user.id);
-    
+    // Определяем сервер из заголовка или query (можно задать по умолчанию)
+    const server = req.headers['x-server'] || req.query.server || 'CLASSIC';
+    console.log(`[API] Fetching player ${req.user.id} for server ${server}`);
+
     let { data: player, error } = await supabase
       .from("players")
       .select("*")
       .eq("discord_id", req.user.id)
       .single();
 
-    if (error) {
-      console.error("Supabase error:", error);
-      // Если пользователь не найден, создаём его
-      if (error.code === 'PGRST116') { // not found
-        const provider = req.user.id.startsWith("google_") ? "google" : "discord";
-        const avatar = provider === "google" 
-          ? (req.user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(req.user.username)}`)
-          : `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`;
-        
-        const { data: newPlayer, error: insertError } = await supabase
-          .from("players")
-          .insert({
-            discord_id: req.user.id,
-            username: req.user.username,
-            avatar: avatar,
-            provider: provider,
-            created_at: new Date().toISOString(),
-            roles: []
-          })
-          .select()
-          .single();
-        
-        if (insertError) {
-          console.error("Insert error in /me:", insertError);
-          return res.status(500).json({ error: insertError.message });
-        }
-        player = newPlayer;
-      } else {
-        return res.status(500).json({ error: error.message });
-      }
+    if (error && error.code === 'PGRST116') {
+      const provider = req.user.id.startsWith("google_") ? "google" : "discord";
+      const avatar = provider === "google" 
+        ? (req.user.photos?.[0]?.value || `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(req.user.username)}`)
+        : `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`;
+      const { data: newPlayer, error: insertError } = await supabase
+        .from("players")
+        .insert({
+          discord_id: req.user.id,
+          username: req.user.username,
+          avatar: avatar,
+          provider: provider,
+          created_at: new Date().toISOString(),
+          roles: []
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      player = newPlayer;
+    } else if (error) {
+      throw error;
     }
 
+    // Базовые permissions
     const permissions = {
       viewModeration: false,
       interactModeration: false,
@@ -72,15 +72,17 @@ router.get("/me", async (req, res) => {
       apAccess: false,
       reservedSlot: false
     };
+    let rights = [];
+    let tag = "";
 
     if (player.roles && player.roles.length > 0) {
       for (const userRole of player.roles) {
         const { data: role } = await supabase
           .from("roles")
-          .select("permissions, ap_access, reserved_slot")
+          .select("*")
           .eq("id", userRole.id)
           .single();
-        if (role) {
+        if (role && role.server === server) {
           if (role.permissions) {
             for (const key of Object.keys(permissions)) {
               if (role.permissions[key]) permissions[key] = true;
@@ -88,13 +90,20 @@ router.get("/me", async (req, res) => {
           }
           if (role.ap_access) permissions.apAccess = true;
           if (role.reserved_slot) permissions.reservedSlot = true;
+          if (role.rights && Array.isArray(role.rights)) {
+            rights.push(...role.rights);
+          }
+          if (role.tag && !tag) tag = role.tag;
         }
       }
     }
+    // Убираем дубликаты прав
+    rights = [...new Set(rights)];
 
-    // Владелец получает все права
     if (player.discord_id === process.env.OWNER_ID) {
       Object.keys(permissions).forEach(k => permissions[k] = true);
+      rights = ["all"];
+      tag = `<color=#FFA500>OWNER</color>`;
     }
 
     res.json({
@@ -104,9 +113,14 @@ router.get("/me", async (req, res) => {
       uid: player.uid,
       roles: player.roles || [],
       permissions,
-      provider: player.provider || (player.discord_id.startsWith("google_") ? "google" : "discord")
+      provider: player.provider || (player.discord_id.startsWith("google_") ? "google" : "discord"),
+      rights,
+      apAccess: permissions.apAccess,
+      reservedSlot: permissions.reservedSlot,
+      tag
     });
   } catch (err) {
+    console.error("[API] /me error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -219,28 +233,32 @@ router.post("/retrieval", isAuthenticated, canInteractModeration, async (req, re
 
 router.get("/roles", isAuthenticated, canAccessAdmin, async (req, res) => {
   try {
-    const { data: roles } = await supabase.from("roles").select("*");
+    const { data: roles, error } = await supabase.from("roles").select("*");
+    if (error) throw error;
     res.json({ roles: roles || [] });
   } catch (err) {
+    console.error("[API] GET /roles error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 router.post("/roles", isAuthenticated, canAccessAdmin, async (req, res) => {
   try {
-    const { name, color, permissions, apAccess, reservedSlot, rights, tag } =
-      req.body;
-    await supabase.from("roles").insert({
+    const { name, color, permissions, apAccess, reservedSlot, rights, tag, server } = req.body;
+    const { error } = await supabase.from("roles").insert({
       name,
       color: color || "#ffffff",
       permissions: permissions || {},
       ap_access: apAccess || false,
       reserved_slot: reservedSlot || false,
-      rights: rights || "",
+      rights: rights || [],
       tag: tag || "",
+      server: server || "CLASSIC"
     });
+    if (error) throw error;
     res.json({ success: true });
   } catch (err) {
+    console.error("[API] POST /roles error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -314,63 +332,57 @@ router.delete(
 );
 
 // Назначение роли пользователю
-router.post(
-  "/players/assign-role",
-  isAuthenticated,
-  isOwner,
-  async (req, res) => {
-    try {
-      const { discordId, roleId, uid } = req.body;
-      if (!discordId || !roleId)
-        return res.status(400).json({ error: "Discord ID и роль обязательны" });
+router.post("/players/assign-role", isAuthenticated, isOwner, async (req, res) => {
+  try {
+    const { discordId, roleId, uid } = req.body;
+    if (!discordId || !roleId) return res.status(400).json({ error: "Discord ID и роль обязательны" });
 
-      // Получаем роль
-      const { data: role } = await supabase
-        .from("roles")
-        .select("*")
-        .eq("id", roleId)
-        .single();
-      if (!role) return res.status(404).json({ error: "Роль не найдена" });
+    const { data: role, error: roleError } = await supabase
+      .from("roles")
+      .select("*")
+      .eq("id", roleId)
+      .single();
+    if (roleError || !role) return res.status(404).json({ error: "Роль не найдена" });
 
-      // Ищем или создаём игрока
-      let { data: player } = await supabase
+    let { data: player, error: playerError } = await supabase
+      .from("players")
+      .select("*")
+      .eq("discord_id", discordId)
+      .single();
+
+    if (playerError || !player) {
+      const { data: newPlayer, error: insertError } = await supabase
         .from("players")
-        .select("*")
-        .eq("discord_id", discordId)
+        .insert({
+          discord_id: discordId,
+          username: discordId,
+          avatar: `https://cdn.discordapp.com/avatars/${discordId}/default.png`,
+        })
+        .select()
         .single();
-      if (!player) {
-        const { data: newPlayer } = await supabase
-          .from("players")
-          .insert({
-            discord_id: discordId,
-            username: discordId,
-            avatar: `https://cdn.discordapp.com/avatars/${discordId}/default.png`,
-          })
-          .select()
-          .single();
-        player = newPlayer;
-      }
-
-      // Добавляем роль (если ещё нет)
-      const roles = player.roles || [];
-      if (!roles.find((r) => r.id === role.id)) {
-        roles.push({ id: role.id, name: role.name, color: role.color });
-      }
-
-      const updateData = { roles };
-      if (uid) updateData.uid = uid;
-
-      await supabase
-        .from("players")
-        .update(updateData)
-        .eq("discord_id", discordId);
-
-      res.json({ success: true });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+      if (insertError) throw insertError;
+      player = newPlayer;
     }
+
+    const roles = player.roles || [];
+    if (!roles.find(r => r.id == role.id)) {
+      roles.push({ id: role.id, name: role.name, color: role.color });
+    }
+
+    const updateData = { roles };
+    if (uid) updateData.uid = uid;
+
+    const { error: updateError } = await supabase
+      .from("players")
+      .update(updateData)
+      .eq("discord_id", discordId);
+    if (updateError) throw updateError;
+    res.json({ success: true });
+  } catch (err) {
+    console.error("[API] POST /players/assign-role error:", err);
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
 router.get("/admin/users", isAuthenticated, isOwner, async (req, res) => {
   try {
@@ -479,11 +491,12 @@ router.get("/users/search", isAuthenticated, canAccessAdmin, async (req, res) =>
   try {
     const { q } = req.query;
     if (!q) return res.json({ users: [] });
-    const { data: users } = await supabase
+    const { data: users, error } = await supabase
       .from("players")
       .select("discord_id, username, avatar")
       .or(`username.ilike.%${q}%,discord_id.ilike.%${q}%`)
       .limit(8);
+    if (error) throw error;
     res.json({
       users: (users || []).map(u => ({
         discordId: u.discord_id,
@@ -492,39 +505,31 @@ router.get("/users/search", isAuthenticated, canAccessAdmin, async (req, res) =>
       }))
     });
   } catch (err) {
+    console.error("[API] GET /users/search error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-router.put("/roles/:id", isAuthenticated, canAccessAdmin, async (req, res) => {
-  try {
-    const { name, color, permissions, apAccess, reservedSlot } = req.body;
-    const updateData = {};
-    if (name) updateData.name = name;
-    if (color) updateData.color = color;
-    if (permissions) updateData.permissions = permissions;
-    if (typeof apAccess === 'boolean') updateData.ap_access = apAccess;
-    if (typeof reservedSlot === 'boolean') updateData.reserved_slot = reservedSlot;
 
-    const { error } = await supabase
-      .from("roles")
-      .update(updateData)
-      .eq("id", req.params.id);
+router.delete("/roles/:id", isAuthenticated, canAccessAdmin, async (req, res) => {
+  try {
+    const { error } = await supabase.from("roles").delete().eq("id", req.params.id);
     if (error) throw error;
     res.json({ success: true });
   } catch (err) {
+    console.error("[API] DELETE /roles/:id error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 router.get("/roles/:id/users", isAuthenticated, canAccessAdmin, async (req, res) => {
   try {
-    // Получаем роль, чтобы знать её имя (но не обязательно)
-    const { data: allPlayers } = await supabase
+    const { data: allPlayers, error } = await supabase
       .from("players")
       .select("discord_id, username, avatar, roles");
+    if (error) throw error;
 
-    const roleId = parseInt(req.params.id); // или строка, в зависимости от типа id
+    const roleId = parseInt(req.params.id);
     const usersWithRole = (allPlayers || []).filter(p =>
       (p.roles || []).some(r => r.id == roleId)
     ).map(p => ({
@@ -532,9 +537,9 @@ router.get("/roles/:id/users", isAuthenticated, canAccessAdmin, async (req, res)
       username: p.username,
       avatar: p.avatar,
     }));
-
     res.json({ users: usersWithRole });
   } catch (err) {
+    console.error("[API] GET /roles/:id/users error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -543,22 +548,22 @@ router.get("/roles/:id/users", isAuthenticated, canAccessAdmin, async (req, res)
 router.delete("/players/:discordId/roles/:roleId", isAuthenticated, canAccessAdmin, async (req, res) => {
   try {
     const { discordId, roleId } = req.params;
-    // Получаем текущего игрока
-    const { data: player } = await supabase
+    const { data: player, error: fetchError } = await supabase
       .from("players")
       .select("roles")
       .eq("discord_id", discordId)
       .single();
-    if (!player) return res.status(404).json({ error: "Пользователь не найден" });
+    if (fetchError || !player) return res.status(404).json({ error: "Пользователь не найден" });
 
     const roles = (player.roles || []).filter(r => r.id != roleId);
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from("players")
       .update({ roles })
       .eq("discord_id", discordId);
-    if (error) throw error;
+    if (updateError) throw updateError;
     res.json({ success: true });
   } catch (err) {
+    console.error("[API] DELETE /players/:discordId/roles/:roleId error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -611,19 +616,13 @@ router.get("/game/retrieval/clear/:uid", async (req, res) => {
 router.get("/player/:discordId", isAuthenticated, async (req, res) => {
   try {
     const { discordId } = req.params;
-    
-    // Получаем игрока из БД
-    const { data: player } = await supabase
+    const { data: player, error } = await supabase
       .from("players")
       .select("*")
       .eq("discord_id", discordId)
       .single();
-    
-    if (!player) {
-      return res.status(404).json({ error: "Пользователь не найден" });
-    }
-    
-    // Собираем permissions из ролей
+    if (error || !player) return res.status(404).json({ error: "Пользователь не найден" });
+
     const permissions = {
       viewModeration: false,
       interactModeration: false,
@@ -634,15 +633,18 @@ router.get("/player/:discordId", isAuthenticated, async (req, res) => {
       apAccess: false,
       reservedSlot: false
     };
-    
+    let rights = [];
+    let tag = "";
+    const server = req.headers['x-server'] || req.query.server || 'CLASSIC';
+
     if (player.roles && player.roles.length > 0) {
       for (const userRole of player.roles) {
         const { data: role } = await supabase
           .from("roles")
-          .select("permissions, ap_access, reserved_slot")
+          .select("*")
           .eq("id", userRole.id)
           .single();
-        if (role) {
+        if (role && role.server === server) {
           if (role.permissions) {
             for (const key of Object.keys(permissions)) {
               if (role.permissions[key]) permissions[key] = true;
@@ -650,15 +652,18 @@ router.get("/player/:discordId", isAuthenticated, async (req, res) => {
           }
           if (role.ap_access) permissions.apAccess = true;
           if (role.reserved_slot) permissions.reservedSlot = true;
+          if (role.rights && Array.isArray(role.rights)) rights.push(...role.rights);
+          if (role.tag && !tag) tag = role.tag;
         }
       }
     }
-    
-    // Владелец имеет все права
+    rights = [...new Set(rights)];
+
     if (player.discord_id === process.env.OWNER_ID) {
       Object.keys(permissions).forEach(k => permissions[k] = true);
+      rights = ["all"];
     }
-    
+
     res.json({
       discordId: player.discord_id,
       username: player.username,
@@ -666,11 +671,82 @@ router.get("/player/:discordId", isAuthenticated, async (req, res) => {
       uid: player.uid,
       roles: player.roles || [],
       permissions,
+      rights,
+      apAccess: permissions.apAccess,
+      reservedSlot: permissions.reservedSlot,
+      tag,
       isOwner: player.discord_id === process.env.OWNER_ID
     });
   } catch (err) {
+    console.error("[API] GET /player/:discordId error:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
+router.get("/isadmin/:uid", async (req, res) => {
+  const uid = req.params.uid;
+  const server = req.headers['x-server'] || req.query.server || 'CLASSIC';
+  console.log(`[API] Checking admin rights for UID ${uid} on server ${server}`);
+
+  try {
+    // 1. Находим игрока по UID
+    const { data: player, error: playerError } = await supabase
+      .from("players")
+      .select("*")
+      .eq("uid", uid)
+      .single();
+
+    if (playerError || !player) {
+      return res.json({ success: false, message: "Player not found", rights: [], apAccess: false, reservedSlot: false });
+    }
+
+    let rights = [];
+    let apAccess = false;
+    let reservedSlot = false;
+    let tag = "";
+
+    if (player.roles && player.roles.length > 0) {
+      for (const userRole of player.roles) {
+        const { data: role, error: roleError } = await supabase
+          .from("roles")
+          .select("*")
+          .eq("id", userRole.id)
+          .single();
+
+        if (role && !roleError && role.server === server) {
+          if (role.rights && Array.isArray(role.rights)) {
+            rights.push(...role.rights);
+          }
+          if (role.ap_access) apAccess = true;
+          if (role.reserved_slot) reservedSlot = true;
+          if (role.tag && !tag) tag = role.tag;
+        }
+      }
+    }
+
+    rights = [...new Set(rights)];
+
+    // Владелец получает все права
+    if (player.discord_id === process.env.OWNER_ID) {
+      rights = ["all"];
+      apAccess = true;
+      reservedSlot = true;
+    }
+
+    res.json({
+      success: true,
+      uid: player.uid,
+      discordId: player.discord_id,
+      rights,
+      apAccess,
+      reservedSlot,
+      tag
+    });
+  } catch (err) {
+    console.error("[API] /isadmin error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 module.exports = router;
