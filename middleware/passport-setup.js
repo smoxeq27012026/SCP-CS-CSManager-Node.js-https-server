@@ -1,5 +1,6 @@
 const passport = require("passport");
 const DiscordStrategy = require("passport-discord").Strategy;
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
@@ -15,6 +16,27 @@ passport.use(
     (accessToken, refreshToken, profile, done) => {
       // Здесь можно сохранять пользователя в БД, но пока просто передаём профиль
       return done(null, profile);
+    }
+  )
+);
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      // Обогащаем профиль, чтобы он был совместим с существующей логикой
+      const enrichedProfile = {
+        ...profile,
+        id: `google_${profile.id}`,
+        username: profile.displayName,
+        avatar: profile.photos?.[0]?.value || "https://cdn.discordapp.com/embed/avatars/0.png",
+        provider: "google",
+      };
+      return done(null, enrichedProfile);
     }
   )
 );
