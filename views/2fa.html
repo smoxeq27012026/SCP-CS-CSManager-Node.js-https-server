@@ -2,62 +2,656 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="shortcut icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    
-    <!-- для разных размеров -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    <title>DELTAxEX :: 2FA</title>
+    <title>DELTAxEX :: Двухфакторная аутентификация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
-            --bg-dark: #0a0d10; --bg-card: rgba(20,24,30,0.6); --border-color: rgba(60,70,85,0.3);
-            --text-primary: #e8eaed; --text-secondary: #9ca3af; --accent-green: #3b9d6f; --accent-hover: #48b583;
+            --bg-dark: #07090e;
+            --bg-card: rgba(13, 17, 24, 0.75);
+            --bg-sidebar: rgba(9, 11, 16, 0.85);
+            --bg-input: rgba(22, 28, 38, 0.6);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --border-hover: rgba(59, 157, 111, 0.4);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-green: #3b9d6f;
+            --accent-hover: #45b07e;
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --shadow-glow: 0 0 20px rgba(59, 157, 111, 0.2);
+            --danger: #ef4444;
+            --warning: #fb923c;
+            --transition-default: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
+
         body {
-            font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0a0d10, #151a22);
-            color: var(--text-primary); min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top right, #121824 0%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+            position: relative;
         }
-        .card {
-            background: var(--bg-card); backdrop-filter: blur(20px); border: 1px solid var(--border-color);
-            border-radius: 20px; padding: 40px; text-align: center; max-width: 420px; width: 90%;
+
+        /* Анимированная сетка как в DASHBOARD */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle,
+                rgba(59, 157, 111, 0.02) 1px,
+                transparent 1px
+            );
+            background-size: 40px 40px;
+            animation: gridMove 40s linear infinite;
+            pointer-events: none;
+            z-index: 0;
         }
-        .card h2 { font-size: 24px; margin-bottom: 8px; }
-        .card p { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
-        .code-input {
-            background: rgba(30,35,42,0.5); border: 1px solid var(--border-color); border-radius: 12px;
-            padding: 16px; color: white; font-size: 24px; text-align: center; width: 100%; letter-spacing: 8px;
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        /* Контейнер с z-index поверх сетки */
+        .fa-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Карточка в стиле DASHBOARD */
+        .fa-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 48px 40px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+            transition: var(--transition-default);
+            animation: fadeInBlur 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .fa-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 28px 56px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes fadeInBlur {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+                filter: blur(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        /* Логотип */
+        .logo {
+            margin-bottom: 28px;
+        }
+
+        .logo h2 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #e4f9f0 0%, #3b9d6f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .logo p {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Иконка щита */
+        .shield-icon {
+            width: 85px;
+            height: 85px;
+            background: rgba(59, 157, 111, 0.1);
+            border: 2px solid rgba(59, 157, 111, 0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px auto;
+            transition: var(--transition-default);
+            animation: shieldPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes shieldPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 157, 111, 0.2);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(59, 157, 111, 0);
+                transform: scale(1.05);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 157, 111, 0);
+                transform: scale(1);
+            }
+        }
+
+        .shield-icon i {
+            font-size: 40px;
+            color: var(--accent-green);
+        }
+
+        .fa-card:hover .shield-icon {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(59, 157, 111, 0.3);
+            border-color: rgba(59, 157, 111, 0.4);
+        }
+
+        /* Заголовки */
+        .fa-card h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .fa-card .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        /* Поле ввода кода */
+        .input-group {
+            margin-bottom: 28px;
+        }
+
+        .code-inputs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
             margin-bottom: 16px;
         }
-        .btn {
-            padding: 14px 28px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
-            border: none; background: linear-gradient(135deg, var(--accent-green), var(--accent-hover)); color: white; width: 100%;
+
+        .code-digit {
+            width: 55px;
+            height: 70px;
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            font-family: "Fira Mono", "Courier New", monospace;
+            transition: var(--transition-default);
         }
-        .error { color: #ef4444; font-size: 13px; margin-top: 8px; }
+
+        .code-digit:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            background: rgba(22, 28, 38, 0.8);
+            box-shadow: 0 0 0 4px rgba(59, 157, 111, 0.12);
+            transform: scale(1.05);
+        }
+
+        .code-digit:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            background: rgba(22, 28, 38, 0.7);
+        }
+
+        /* Скрытое поле для удобства */
+        .hidden-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+        }
+
+        /* Кнопка */
+        .btn {
+            width: 100%;
+            padding: 16px 28px;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-default);
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: inherit;
+            background: var(--accent-green);
+            color: #fff;
+            box-shadow: var(--shadow-glow);
+            margin-bottom: 20px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(59, 157, 111, 0.35);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Ошибка */
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            color: #f87171;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .error i {
+            font-size: 14px;
+        }
+
+        /* Ссылка назад */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 12px;
+            transition: var(--transition-default);
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-color);
+        }
+
+        .back-link:hover {
+            color: var(--accent-green);
+            border-color: var(--border-hover);
+            background: rgba(59, 157, 111, 0.05);
+            transform: translateX(-4px);
+        }
+
+        /* Информация о времени */
+        .timer-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .timer-info i {
+            color: var(--accent-green);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 560px) {
+            .fa-card {
+                padding: 36px 28px;
+                border-radius: 24px;
+            }
+            
+            .fa-card h2 {
+                font-size: 22px;
+            }
+            
+            .shield-icon {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .shield-icon i {
+                font-size: 34px;
+            }
+            
+            .code-digit {
+                width: 48px;
+                height: 60px;
+                font-size: 24px;
+            }
+            
+            .code-inputs {
+                gap: 8px;
+            }
+            
+            .btn {
+                padding: 14px 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+            
+            .fa-card {
+                padding: 28px 20px;
+            }
+            
+            .fa-card h2 {
+                font-size: 20px;
+            }
+            
+            .subtitle {
+                font-size: 13px;
+            }
+            
+            .code-digit {
+                width: 42px;
+                height: 54px;
+                font-size: 22px;
+            }
+            
+            .code-inputs {
+                gap: 6px;
+            }
+            
+            .logo h2 {
+                font-size: 20px;
+            }
+        }
+
+        /* Анимация пульсации для кнопки */
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease-out, height 0.4s ease-out;
+        }
+
+        .btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Стили для скролла */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-green);
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
-<div class="card">
-    <h2><i class="fas fa-shield-haltered"></i> Двухфакторная аутентификация</h2>
-    <p>Введите 6-значный код из приложения‑аутентификатора</p>
-    <input type="text" id="code" class="code-input" placeholder="000000" maxlength="6" inputmode="numeric" autofocus>
-    <button class="btn" onclick="verify()">Подтвердить</button>
-    <p class="error" id="error"></p>
+<div class="fa-container">
+    <div class="fa-card">
+        <div class="logo">
+            <h2><i class="fas fa-angle-double-right"></i> DELTAxEX <i class="fas fa-angle-double-left"></i></h2>
+            <p>CSManager Panel</p>
+        </div>
+        
+        <div class="shield-icon">
+            <i class="fas fa-shield-haltered"></i>
+        </div>
+        
+        <h2>Двухфакторная аутентификация</h2>
+        <p class="subtitle">Введите 6-значный код из приложения‑аутентификатора</p>
+        
+        <div class="input-group">
+            <div class="code-inputs" id="codeInputs">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="\\d*" id="digit1" autofocus>
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="\\d*" id="digit2">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="\\d*" id="digit3">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="\\d*" id="digit4">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="\\d*" id="digit5">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="\\d*" id="digit6">
+            </div>
+        </div>
+        
+        <button class="btn" id="verifyBtn" onclick="verify()">
+            <i class="fas fa-check-circle"></i> Подтвердить
+        </button>
+        
+        <div id="errorContainer" style="display: none;">
+            <div class="error" id="error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="timer-info">
+            <i class="fas fa-clock"></i>
+            <span>Код обновляется каждые 30 секунд</span>
+        </div>
+        
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i> На главную
+        </a>
+    </div>
 </div>
+
 <script>
-async function verify() {
-  const code = document.getElementById('code').value.trim();
-  if (code.length !== 6) return document.getElementById('error').textContent = 'Введите 6 цифр';
-  const res = await fetch('/auth/2fa/verify', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ code })
-  });
-  const data = await res.json();
-  if (data.success) window.location.href = data.redirect;
-  else document.getElementById('error').textContent = data.error || 'Ошибка';
-}
-document.getElementById('code').addEventListener('keydown', e => { if (e.key === 'Enter') verify(); });
+    // Автоматическое переключение между полями
+    const digits = [
+        document.getElementById('digit1'),
+        document.getElementById('digit2'),
+        document.getElementById('digit3'),
+        document.getElementById('digit4'),
+        document.getElementById('digit5'),
+        document.getElementById('digit6')
+    ];
+    
+    function moveToNext(currentIndex) {
+        if (currentIndex < 5) {
+            digits[currentIndex + 1].focus();
+        }
+    }
+    
+    function moveToPrev(currentIndex) {
+        if (currentIndex > 0) {
+            digits[currentIndex - 1].focus();
+        }
+    }
+    
+    digits.forEach((digit, index) => {
+        digit.addEventListener('input', (e) => {
+            // Ограничиваем только цифры
+            let value = e.target.value;
+            if (value && !/^\d+$/.test(value)) {
+                e.target.value = '';
+                return;
+            }
+            
+            if (value && value.length === 1) {
+                moveToNext(index);
+            }
+            
+            // Скрываем ошибку при вводе
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.style.display = 'none';
+        });
+        
+        digit.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                if (e.target.value === '') {
+                    moveToPrev(index);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                moveToPrev(index);
+            } else if (e.key === 'ArrowRight') {
+                moveToNext(index);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                verify();
+            }
+        });
+        
+        // Фокус и выделение
+        digit.addEventListener('focus', (e) => {
+            e.target.select();
+        });
+    });
+    
+    function getCode() {
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += digits[i].value;
+        }
+        return code;
+    }
+    
+    function clearCode() {
+        for (let i = 0; i < 6; i++) {
+            digits[i].value = '';
+        }
+        digits[0].focus();
+    }
+    
+    async function verify() {
+        const code = getCode();
+        const errorContainer = document.getElementById('errorContainer');
+        const errorSpan = document.querySelector('#error span');
+        const verifyBtn = document.getElementById('verifyBtn');
+        
+        if (code.length !== 6) {
+            errorSpan.textContent = 'Пожалуйста, введите 6-значный код';
+            errorContainer.style.display = 'block';
+            
+            // Подсветка пустых полей
+            for (let i = 0; i < 6; i++) {
+                if (!digits[i].value) {
+                    digits[i].style.borderColor = 'var(--danger)';
+                    setTimeout(() => {
+                        digits[i].style.borderColor = '';
+                    }, 2000);
+                }
+            }
+            return;
+        }
+        
+        // Показываем состояние загрузки
+        const originalText = verifyBtn.innerHTML;
+        verifyBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Проверка...';
+        verifyBtn.disabled = true;
+        
+        try {
+            const res = await fetch('/auth/2fa/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                // Успешная проверка
+                verifyBtn.innerHTML = '<i class="fas fa-check"></i> Успешно!';
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/dashboard';
+                }, 500);
+            } else {
+                // Ошибка
+                errorSpan.textContent = data.error || 'Неверный код. Попробуйте снова.';
+                errorContainer.style.display = 'block';
+                verifyBtn.innerHTML = originalText;
+                verifyBtn.disabled = false;
+                clearCode();
+                
+                // Визуальная подсветка ошибки
+                const inputsDiv = document.getElementById('codeInputs');
+                inputsDiv.style.animation = 'shake 0.5s ease-in-out';
+                setTimeout(() => {
+                    inputsDiv.style.animation = '';
+                }, 500);
+            }
+        } catch (err) {
+            errorSpan.textContent = 'Ошибка соединения. Попробуйте позже.';
+            errorContainer.style.display = 'block';
+            verifyBtn.innerHTML = originalText;
+            verifyBtn.disabled = false;
+        }
+    }
+    
+    // Добавляем анимацию встряски
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Вставка/вставка из буфера обмена
+    document.addEventListener('paste', (e) => {
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        if (pastedText && /^\d{6}$/.test(pastedText.trim())) {
+            e.preventDefault();
+            const code = pastedText.trim();
+            for (let i = 0; i < 6; i++) {
+                digits[i].value = code[i];
+            }
+            verify();
+        }
+    });
 </script>
 </body>
 </html>
