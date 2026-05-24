@@ -1077,11 +1077,21 @@
         </div>
         <div class="server-select">
           <label><i class="fas fa-server"></i> Сервера:</label>
-          <div class="server-dropdown">
-            <select id="serverSelect">
-              <option value="CLASSIC">CLASSIC</option>
-              <option value="MEDIUMRP">MEDIUMRP</option>
-            </select>
+          <div class="custom-dropdown" id="serverDropdown">
+            <div class="dropdown-trigger" id="dropdownTrigger">
+              <span id="selectedServerText">CLASSIC</span>
+              <span class="arrow"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="dropdown-menu" id="dropdownMenu">
+              <div class="dropdown-option" data-server="CLASSIC">
+                <i class="fas fa-shield-haltered"></i>
+                <span>CLASSIC</span>
+              </div>
+              <div class="dropdown-option" data-server="MEDIUMRP">
+                <i class="fas fa-dragon"></i>
+                <span>MEDIUMRP</span>
+              </div>
+            </div>
           </div>
         </div>
         <nav class="nav-menu">
@@ -1757,34 +1767,63 @@
       }
 
       function setupServerDropdown() {
-        const selectedBtn = document.getElementById("selectedServerBtn");
-        const dropdown = document.getElementById("dropdownOptions");
-        const selectedNameSpan = document.getElementById("selectedServerName");
-        const options = document.querySelectorAll(".dropdown-option");
-
-        selectedBtn.addEventListener("click", () => {
-          dropdown.classList.toggle("show");
+        const trigger = document.getElementById('dropdownTrigger');
+        const menu = document.getElementById('dropdownMenu');
+        const options = document.querySelectorAll('.dropdown-option');
+        const selectedText = document.getElementById('selectedServerText');
+        
+        // Открытие/закрытие
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          menu.classList.toggle('show');
+          trigger.classList.toggle('active');
         });
-
+        
+        // Выбор опции
         options.forEach(opt => {
-          opt.addEventListener("click", () => {
-            const server = opt.getAttribute("data-server");
+          opt.addEventListener('click', () => {
+            const server = opt.getAttribute('data-server');
+            const serverName = opt.querySelector('span').textContent;
+            
+            // Обновляем отображение
+            selectedText.textContent = serverName;
+            
+            // Обновляем выбранный класс
+            options.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            
+            // Сохраняем в localStorage
             currentServer = server;
             localStorage.setItem('selectedServer', server);
-            selectedNameSpan.textContent = server;
-            dropdown.classList.remove("show");
+            
+            // Закрываем дропдаун
+            menu.classList.remove('show');
+            trigger.classList.remove('active');
+            
+            // Обновляем данные пользователя
             if (refreshUserDataTimeout) clearTimeout(refreshUserDataTimeout);
             refreshUserDataTimeout = setTimeout(() => {
               refreshUserData();
             }, 200);
           });
         });
-
-        document.addEventListener("click", (e) => {
-          if (!selectedBtn.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.remove("show");
+        
+        // Закрытие при клике вне
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.custom-dropdown')) {
+            menu.classList.remove('show');
+            trigger.classList.remove('active');
           }
         });
+        
+        // Восстанавливаем выбранное значение из localStorage
+        const savedServer = localStorage.getItem('selectedServer');
+        if (savedServer) {
+          const selectedOption = document.querySelector(`.dropdown-option[data-server="${savedServer}"]`);
+          if (selectedOption) {
+            selectedOption.click();
+          }
+        }
       }
 
       // Инициализация
