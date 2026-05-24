@@ -2133,7 +2133,8 @@
           return showToast("Заполните все поля", "", "warning");
         if (!/^\d+$/.test(uid))
           return showToast("UID должен содержать только цифры", "", "error");
-        fetch("/api/retrieval", {
+        
+        fetch(`/api/retrieval?server=${currentServer}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ uid, reason, time: parseInt(time) }),
@@ -2141,8 +2142,11 @@
           .then((r) => r.json())
           .then((d) => {
             if (d.success) {
-              showToast("Добавлено!", "", "success");
+              showToast("Добавлено в розыск на сервере " + currentServer, "", "success");
               loadRetrievals();
+              document.getElementById("modUid").value = "";
+              document.getElementById("modReason").value = "";
+              document.getElementById("modTime").value = "";
             } else {
               showToast("Ошибка", d.error || "", "error");
             }
@@ -2156,11 +2160,16 @@
       }
 
       function loadRetrievals() {
-        fetch("/api/retrieval")
+        // Передаем текущий сервер
+        fetch(`/api/retrieval?server=${currentServer}`)
           .then((r) => r.json())
           .then((data) => {
             const tbody = document.querySelector("#retrievalTable tbody");
             tbody.innerHTML = "";
+            if (data.error) {
+              tbody.innerHTML = `<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">${data.error}</td></tr>`;
+              return;
+            }
             (data.retrievals || []).forEach((entry) => {
               const row = document.createElement("tr");
               row.style.cssText = "background:var(--bg-input);backdrop-filter:blur(10px);";
@@ -2179,19 +2188,25 @@
               tbody.appendChild(row);
             });
             if (!data.retrievals || data.retrievals.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">Нет активных розысков</td></tr>';
+              tbody.innerHTML = '<td><td colspan="4" style="padding:16px;color:var(--text-secondary);">Нет активных розысков на сервере ${currentServer}</td></tr>';
             }
+          })
+          .catch(err => {
+            console.error(err);
+            showToast("Ошибка загрузки розысков", "", "error");
           });
       }
 
 
       function clearRetrieval(uid) {
-        fetch(`/api/retrieval/clear/${uid}`)
+        fetch(`/api/retrieval/clear/${uid}?server=${currentServer}`)
           .then((r) => r.json())
           .then((d) => {
             if (d.success) loadRetrievals();
+            else showToast("Ошибка", d.error || "", "error");
           });
       }
+
 
       function update2FAButton() {
         fetch("/auth/2fa/status")
