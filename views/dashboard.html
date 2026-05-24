@@ -1993,32 +1993,41 @@
                   });
               };
             } else if (isOwner || userPermissions.canSetUID) {
-              // Owner или есть право canSetUID — может менять чужой UID
-              btnSet.textContent = "Изменить Game ID";
-              btnSet.disabled = false;
-              btnSet.style.opacity = "1";
-              btnSet.onclick = async () => {
-                const newUid = await showInputModal(
-                  "Изменение UID",
-                  `Введите новый Game ID для ${playerData.username}:`,
-                  "Например: 12345"
-                );
-                if (!newUid) return;
-                fetch("/api/me/uid", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ uid: newUid, discordId: playerData.discordId }),
-                })
-                  .then((r) => r.json())
-                  .then((d) => {
-                    if (d.success) {
-                      document.getElementById("modalGameId").textContent = newUid;
-                      showToast("Успешно", "Game ID обновлён!", "success");
-                      searchUsers();
-                    } else {
-                      showToast("Ошибка", d.error || "", "error");
-                    }
+                btnSet.textContent = "Изменить Game ID";
+                btnSet.disabled = false;
+                btnSet.style.opacity = "1";
+                btnSet.onclick = async () => {
+                  const newUid = await showInputModal(
+                    "Изменение UID",
+                    `Введите новый Game ID для ${playerData.username}:`,
+                    "Например: 12345"
+                  );
+                  if (!newUid) return;
+                  
+                  // ВАЖНО: передаем discordId того, кому меняем!
+                  const response = await fetch("/api/me/uid", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                      uid: newUid, 
+                      discordId: playerData.discordId  // ← КЛЮЧЕВОЙ ПАРАМЕТР
+                    }),
                   });
+                  const d = await response.json();
+                  
+                  if (d.success) {
+                    document.getElementById("modalGameId").textContent = newUid;
+                    showToast("Успешно", `Game ID для ${playerData.username} обновлён!`, "success");
+                    searchUsers();
+                    // Если обновляем uid текущего пользователя в модалке профиля
+                    if (playerData.discordId === currentUser?.discordId) {
+                      currentUser.uid = newUid;
+                      updateProfilePopup();
+                    }
+                  } else {
+                    showToast("Ошибка", d.error || "", "error");
+                  }
+                };
               };
             } else {
               // Чужой профиль — кнопка неактивна
