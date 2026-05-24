@@ -170,15 +170,64 @@ router.get("/users", isAuthenticated, async (req, res) => {
 
 router.post("/me/uid", isAuthenticated, async (req, res) => {
   try {
-    const { uid } = req.body;
-    if (!uid) return res.status(400).json({ error: "UID обязателен" });
+    const { uid, discordId: targetDiscordId } = req.body;
+    const currentUserId = req.user.id;
+    
+    // Определяем, чей UID меняем
+    let targetDiscordIdToUpdate = currentUserId;
+    let isSelf = true;
+    
+    if (targetDiscordId && targetDiscordId !== currentUserId) {
+      // Меняем чужой UID
+      isSelf = false;
+      
+      // Проверяем права (owner или canSetUID)
+      const isOwner = currentUserId === process.env.OWNER_ID;
+      
+      // Проверяем canSetUID через роли
+      let canSetUID = false;
+      const { data: player } = await supabase
+        .from("players")
+        .select("roles")
+        .eq("discord_id", currentUserId)
+        .single();
+      
+      if (player?.roles) {
+        for (const userRole of player.roles) {
+          const { data: role } = await supabase
+            .from("roles")
+            .select("permissions")
+            .eq("id", userRole.id)
+            .single();
+          if (role?.permissions?.canSetUID) {
+            canSetUID = true;
+            break;
+          }
+        }
+      }
+      
+      if (!isOwner && !canSetUID) {
+        return res.status(403).json({ error: "Нет прав на изменение UID другого пользователя" });
+      }
+      
+      targetDiscordIdToUpdate = targetDiscordId;
+    }
+    
+    // Обновляем UID
     const { error } = await supabase
       .from("players")
-      .update({ uid })
-      .eq("discord_id", req.user.id);
+      .update({ uid: uid || null })
+      .eq("discord_id", targetDiscordIdToUpdate);
+    
     if (error) throw error;
-    res.json({ success: true });
+    
+    res.json({ 
+      success: true, 
+      message: isSelf ? "Ваш UID обновлён" : "UID пользователя обновлён",
+      uid: uid
+    });
   } catch (err) {
+    console.error("[API] POST /me/uid error:", err);
     res.status(500).json({ error: err.message });
   }
 });
