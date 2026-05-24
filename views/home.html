@@ -3,11 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DELTAxEX :: CSManager</title>
+    <title>DELTAxEX :: CSManager — Вход</title>
     <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="shortcut icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    
-    <!-- для разных размеров -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link
       rel="stylesheet"
@@ -19,22 +17,28 @@
         padding: 0;
         box-sizing: border-box;
       }
+
       :root {
-        --bg-dark: #0a0d10;
-        --bg-card: rgba(20, 24, 30, 0.6);
-        --bg-sidebar: rgba(15, 18, 23, 0.85);
-        --bg-input: rgba(30, 35, 42, 0.5);
-        --border-color: rgba(60, 70, 85, 0.3);
-        --text-primary: #e8eaed;
+        --bg-dark: #07090e;
+        --bg-card: rgba(13, 17, 24, 0.7);
+        --bg-sidebar: rgba(9, 11, 16, 0.85);
+        --bg-input: rgba(22, 28, 38, 0.5);
+        --border-color: rgba(255, 255, 255, 0.05);
+        --border-hover: rgba(59, 157, 111, 0.4);
+        --text-primary: #f3f4f6;
         --text-secondary: #9ca3af;
         --accent-green: #3b9d6f;
-        --accent-hover: #48b583;
-        --glass-bg: rgba(25, 30, 38, 0.4);
-        --shadow-glow: 0 4px 24px rgba(59, 157, 111, 0.15);
+        --accent-hover: #45b07e;
+        --glass-bg: rgba(255, 255, 255, 0.02);
+        --shadow-glow: 0 0 20px rgba(59, 157, 111, 0.2);
+        --danger: #ef4444;
+        --warning: #fb923c;
+        --transition-default: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
       }
+
       body {
-        font-family: "Inter", -apple-system, sans-serif;
-        background: linear-gradient(135deg, #0a0d10 0%, #151a22 100%);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top right, #121824 0%, var(--bg-dark) 100%);
         color: var(--text-primary);
         min-height: 100vh;
         display: flex;
@@ -42,7 +46,10 @@
         justify-content: center;
         overflow-x: hidden;
         padding: 20px;
+        position: relative;
       }
+
+      /* Анимированная сетка, как в DASHBOARD */
       body::before {
         content: "";
         position: fixed;
@@ -52,45 +59,46 @@
         height: 200%;
         background: radial-gradient(
           circle,
-          rgba(59, 157, 111, 0.03) 1px,
+          rgba(59, 157, 111, 0.02) 1px,
           transparent 1px
         );
-        background-size: 50px 50px;
-        animation: gridMove 20s linear infinite;
+        background-size: 40px 40px;
+        animation: gridMove 40s linear infinite;
         pointer-events: none;
         z-index: 0;
       }
+
       @keyframes gridMove {
-        0% {
-          transform: translate(0, 0);
-        }
-        100% {
-          transform: translate(50px, 50px);
-        }
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(40px, 40px); }
       }
 
+      /* Контейнер с z-index поверх сетки */
       .welcome-container {
         display: flex;
         gap: 24px;
-        max-width: 900px;
+        max-width: 1000px;
         width: 100%;
         position: relative;
-        z-index: 1;
+        z-index: 2;
+        backdrop-filter: blur(2px);
       }
 
+      /* Стили карточек — такие же стеклянные, как в панели */
       .welcome-card {
         background: var(--bg-card);
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--border-color);
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 40px 32px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        animation: fadeInUp 0.6s ease;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        transition: var(--transition-default);
         flex: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        text-align: center;
+        animation: fadeInBlur 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
       }
 
       .welcome-card.left {
@@ -102,144 +110,167 @@
         text-align: left;
       }
 
-      @keyframes fadeInUp {
+      .welcome-card:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      @keyframes fadeInBlur {
         from {
           opacity: 0;
-          transform: translateY(30px);
+          transform: translateY(15px);
+          filter: blur(5px);
         }
         to {
           opacity: 1;
           transform: translateY(0);
+          filter: blur(0);
         }
+      }
+
+      /* Логотип, как в сайдбаре */
+      .logo-gradient {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #e4f9f0 0%, #3b9d6f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 24px;
+        display: inline-block;
       }
 
       .welcome-card h1 {
         font-size: 28px;
         font-weight: 700;
-        margin-bottom: 8px;
-        background: linear-gradient(135deg, #e8eaed 0%, #9ca3af 100%);
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-      }
-
-      .btn-google {
-        background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
-        color: white;
-        box-shadow: 0 4px 24px rgba(66, 133, 244, 0.15);
-      }
-      .btn-google:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(66, 133, 244, 0.3);
-      }
-
-      .welcome-card .logo-gradient {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 16px;
-        background: linear-gradient(135deg, #3b9d6f 0%, #5bc896 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.3px;
       }
 
       .welcome-card p {
         color: var(--text-secondary);
         font-size: 14px;
         line-height: 1.6;
-        margin-bottom: 24px;
+        margin-bottom: 28px;
       }
 
       .welcome-card p.subtitle {
         font-size: 13px;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
+        margin-bottom: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--accent-green);
       }
 
+      /* Кнопки в едином стиле с панелью */
       .btn {
         padding: 14px 28px;
-        border-radius: 12px;
+        border-radius: 14px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
-        border: none;
-        position: relative;
-        overflow: hidden;
-        text-decoration: none;
+        transition: var(--transition-default);
+        border: 1px solid transparent;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
+        text-decoration: none;
+        font-family: inherit;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
       }
 
-      .btn::before {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-      }
-
-      .btn:active::before {
-        width: 300px;
-        height: 300px;
+      .btn:active {
+        transform: scale(0.98);
       }
 
       .btn-primary {
-        background: linear-gradient(
-          135deg,
-          var(--accent-green) 0%,
-          var(--accent-hover) 100%
-        );
-        color: white;
+        background: var(--accent-green);
+        color: #fff;
         box-shadow: var(--shadow-glow);
       }
 
       .btn-primary:hover {
+        background: var(--accent-hover);
+        box-shadow: 0 8px 24px rgba(59, 157, 111, 0.4);
         transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(59, 157, 111, 0.3);
       }
 
+      .btn-google {
+        background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+        margin-top: 12px;
+      }
+
+      .btn-google:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(66, 133, 244, 0.35);
+      }
+
+      .btn-outline {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+      }
+
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      /* Список возможностей — как карточки пользователей */
       .feature-list {
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
+        margin-top: 8px;
       }
 
       .feature-item {
         display: flex;
         align-items: flex-start;
         gap: 14px;
-        padding: 14px 16px;
-        background: var(--glass-bg);
-        border-radius: 12px;
+        padding: 16px 18px;
+        background: rgba(255, 255, 255, 0.01);
         border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
+        border-radius: 16px;
+        transition: var(--transition-default);
+        cursor: default;
       }
 
       .feature-item:hover {
-        background: var(--bg-input);
-        border-color: var(--accent-green);
-        transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.03);
+        border-color: var(--border-hover);
+        transform: translateX(6px);
       }
 
       .feature-item i {
         font-size: 20px;
         color: var(--accent-green);
-        width: 24px;
+        width: 28px;
         text-align: center;
         margin-top: 2px;
+        transition: transform 0.2s ease;
+      }
+
+      .feature-item:hover i {
+        transform: scale(1.1);
       }
 
       .feature-item div h4 {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         color: var(--text-primary);
       }
 
@@ -250,10 +281,35 @@
         line-height: 1.4;
       }
 
+      /* Ссылка "ключ доступа" в стиле навигации */
+      .key-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 10px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        text-decoration: none;
+        transition: var(--transition-default);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--border-color);
+      }
+
+      .key-link:hover {
+        color: var(--accent-green);
+        border-color: var(--border-hover);
+        background: rgba(59, 157, 111, 0.05);
+        transform: translateY(-2px);
+      }
+
+      /* Адаптивность как в панели */
       @media (max-width: 768px) {
         .welcome-container {
           flex-direction: column;
-          max-width: 450px;
+          max-width: 480px;
         }
         .welcome-card {
           padding: 32px 24px;
@@ -261,6 +317,48 @@
         .welcome-card h1 {
           font-size: 24px;
         }
+        .logo-gradient {
+          font-size: 20px;
+        }
+        .feature-item {
+          padding: 14px;
+        }
+      }
+
+      /* Анимация ripple при клике (как в панели, для кнопок) */
+      .btn {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease-out, height 0.4s ease-out;
+      }
+
+      .btn:active::after {
+        width: 300px;
+        height: 300px;
+      }
+
+      /* Кастомный скролл (опционально) */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-dark);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--accent-green);
+        border-radius: 10px;
       }
     </style>
   </head>
@@ -269,65 +367,58 @@
       <!-- Левая панель: Приветствие и вход -->
       <div class="welcome-card left">
         <div class="logo-gradient">
-          <i class="fa fa-angle-double-right"></i> DELTAxEX
-          <i class="fa fa-angle-double-left"></i>
+          <i class="fas fa-angle-double-right"></i> DELTAxEX
+          <i class="fas fa-angle-double-left"></i>
         </div>
         <h1>Добро пожаловать!</h1>
         <p>
-          Управление серверами CS на одном сайте. Авторизуйтесь через Discord,
-          чтобы получить доступ к панели управления.
+          Централизованное управление серверами CS. Авторизуйтесь через Discord
+          или Google, чтобы получить доступ к панели управления и синхронизации ролей.
         </p>
         <a href="/auth/login" class="btn btn-primary">
-          <i class="fab fa-discord"></i> Авторизация через Discord
+          <i class="fab fa-discord"></i> Войти через Discord
         </a>
-        <a href="/auth/google" class="btn btn-google" style="margin-top: 12px; background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);">
-          <i class="fab fa-google"></i> Авторизация через Google
+        <a href="/auth/google" class="btn btn-google">
+          <i class="fab fa-google"></i> Войти через Google
         </a>
-        <a
-          href="/auth/key-login"
-          style="
-            display: block;
-            margin-top: 12px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            text-decoration: none;
-          "
-        >
-          <i class="fas fa-key"></i> Войти через ключ доступа
+        <a href="/auth/key-login" class="key-link">
+          <i class="fas fa-key"></i> Вход по ключу доступа
         </a>
       </div>
 
-      <!-- Правая панель: Возможности -->
+      <!-- Правая панель: Возможности / Фичи (как карточки в дашборде) -->
       <div class="welcome-card right">
-        <h1>Возможности</h1>
-        <p class="subtitle">Что доступно в панели управления:</p>
+        <h1>Возможности панели</h1>
+        <p class="subtitle">
+          <i class="fas fa-crown"></i> Управление сервером нового поколения
+        </p>
         <ul class="feature-list">
           <li class="feature-item">
             <i class="fas fa-users"></i>
             <div>
-              <h4>Управление пользователями v 1.6</h4>
-              <p>Поиск, просмотр профилей, назначение Game ID и ролей</p>
+              <h4>Управление пользователями v1.6</h4>
+              <p>Поиск, профили, выдача Game ID и гибкие роли</p>
             </div>
           </li>
           <li class="feature-item">
             <i class="fas fa-gavel"></i>
             <div>
-              <h4>Модерация</h4>
-              <p>Добавление в розыск, управление наказаниями</p>
+              <h4>Модерация и розыск</h4>
+              <p>Добавление в розыск, санкции, управление очередями</p>
             </div>
           </li>
           <li class="feature-item">
-            <i class="fa fa-rocket"></i>
+            <i class="fas fa-rocket"></i>
             <div>
               <h4>Интеграция с серверами</h4>
-              <p>CLASSIC и MEDIUMRP - синхронизация ролей через API</p>
+              <p>CLASSIC / MEDIUMRP — синхронизация через API</p>
             </div>
           </li>
           <li class="feature-item">
-            <i class="fa fa-key"></i>
+            <i class="fas fa-shield-alt"></i>
             <div>
-              <h4>Двухфакторная защита</h4>
-              <p>Подключите Google Authenticator для безопасного входа</p>
+              <h4>2FA + Ключи доступа</h4>
+              <p>Двухфакторная аутентификация и безопасные ключи</p>
             </div>
           </li>
         </ul>
