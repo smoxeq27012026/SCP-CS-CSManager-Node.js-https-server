@@ -4,31 +4,28 @@ const QRCode = require("qrcode");
 const supabase = require("../config/supabase");
 
 router.use(async (req, res, next) => {
-  if (!req.session || !req.user) return next();
-  if (req.session.totpVerified) return next();
-
-  if (
-    req.path.startsWith("/2fa") ||
-    req.path.startsWith("/login") ||
-    req.path.startsWith("/callback") ||
-    req.path.startsWith("/logout") ||
-    req.path.startsWith("/key") ||
-    req.path.startsWith("/google")
-  ) {
+  // Пропускаем публичные маршруты
+  const publicPaths = ["/2fa", "/2fa/verify", "/2fa/status", "/2fa/enable", "/2fa/confirm-enable", "/2fa/disable"];
+  if (publicPaths.some(path => req.path === path)) {
     return next();
   }
-
+  
+  // Если нет пользователя - пропускаем (редирект на login сделает другой middleware)
+  if (!req.user) return next();
+  
+  // Проверяем, включена ли 2FA у пользователя
   const { data: player } = await supabase
     .from("players")
     .select("totp_enabled")
     .eq("discord_id", req.user.id)
     .single();
-
-  if (player?.totp_enabled) {
+  
+  // Если 2FA включена, но не подтверждена в этой сессии - блокируем
+  if (player?.totp_enabled && !req.session.totpVerified) {
     req.session.returnTo = req.originalUrl;
     return res.redirect("/auth/2fa");
   }
-
+  
   next();
 });
 
