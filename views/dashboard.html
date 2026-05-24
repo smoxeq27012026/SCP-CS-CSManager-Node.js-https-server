@@ -2258,6 +2258,101 @@
         setTimeout(() => removeToastById(toast.id), 5000);
       }
 
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("active");
+      }
+      
+      function searchUsers(page = 1) {
+        const discordId = document.getElementById("searchDiscordId").value.trim();
+        const gameId = document.getElementById("searchGameId").value.trim();
+        let url = `/api/users?page=${page}&limit=4`;
+        if (discordId) url += `&discordId=${encodeURIComponent(discordId)}`;
+        if (gameId) url += `&uid=${encodeURIComponent(gameId)}`;
+        
+        fetch(url)
+          .then((r) => r.json())
+          .then((data) => {
+            const list = document.getElementById("userList");
+            list.innerHTML = "";
+            if (!data.users || data.users.length === 0) {
+              list.innerHTML = '<p style="color:var(--text-secondary)">Пользователи не найдены.</p>';
+              document.getElementById("pagination").innerHTML = "";
+              return;
+            }
+            data.users.forEach((user) => {
+              const card = document.createElement("div");
+              card.className = "user-card";
+              card.onclick = () => openUserModal(user);
+              card.innerHTML = `<img src="${user.avatar}" class="user-avatar"><div class="user-info"><div class="user-name">${escapeHtml(user.username)}</div><div class="user-id">ID: ${escapeHtml(user.discordId)}</div></div>`;
+              list.appendChild(card);
+            });
+            renderPagination(data.page, data.totalPages);
+          })
+          .catch(err => {
+            console.error(err);
+            showToast("Ошибка загрузки пользователей", "", "error");
+          });
+      }
+      
+      function loadMyProfile() {
+        if (currentUser) openUserModal(currentUser);
+      }
+      
+      // Убедитесь, что renderPagination определена
+      function renderPagination(currentPage, totalPages) {
+        const pag = document.getElementById("pagination");
+        pag.innerHTML = "";
+        if (totalPages <= 1) return;
+        pag.style.cssText = "display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap;";
+      
+        const prevBtn = document.createElement("button");
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.style.cssText = "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.3s;";
+        prevBtn.onmouseenter = () => { prevBtn.style.borderColor = "var(--accent-green)"; prevBtn.style.color = "var(--accent-green)"; };
+        prevBtn.onmouseleave = () => { prevBtn.style.borderColor = "var(--border-color)"; prevBtn.style.color = "var(--text-secondary)"; };
+        if (currentPage === 1) {
+          prevBtn.style.opacity = "0.3";
+          prevBtn.style.cursor = "not-allowed";
+        } else {
+          prevBtn.onclick = () => searchUsers(currentPage - 1);
+        }
+        pag.appendChild(prevBtn);
+      
+        const maxVisible = 4;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+      
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = document.createElement("button");
+          pageBtn.textContent = i;
+          pageBtn.style.cssText = "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:13px;font-weight:500;transition:all 0.3s;";
+          pageBtn.onmouseenter = () => { if (i !== currentPage) { pageBtn.style.borderColor = "var(--accent-green)"; pageBtn.style.color = "var(--accent-green)"; } };
+          pageBtn.onmouseleave = () => { if (i !== currentPage) { pageBtn.style.borderColor = "var(--border-color)"; pageBtn.style.color = "var(--text-secondary)"; } };
+          if (i === currentPage) {
+            pageBtn.style.background = "linear-gradient(135deg, var(--accent-green), var(--accent-hover))";
+            pageBtn.style.color = "white";
+            pageBtn.style.borderColor = "transparent";
+          } else {
+            pageBtn.onclick = () => searchUsers(i);
+          }
+          pag.appendChild(pageBtn);
+        }
+      
+        const nextBtn = document.createElement("button");
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.style.cssText = "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.3s;";
+        nextBtn.onmouseenter = () => { nextBtn.style.borderColor = "var(--accent-green)"; nextBtn.style.color = "var(--accent-green)"; };
+        nextBtn.onmouseleave = () => { nextBtn.style.borderColor = "var(--border-color)"; nextBtn.style.color = "var(--text-secondary)"; };
+        if (currentPage === totalPages) {
+          nextBtn.style.opacity = "0.3";
+          nextBtn.style.cursor = "not-allowed";
+        } else {
+          nextBtn.onclick = () => searchUsers(currentPage + 1);
+        }
+        pag.appendChild(nextBtn);
+      }
+            
       function createToastContainer() {
         const container = document.createElement("div");
         container.className = "toast-container";
