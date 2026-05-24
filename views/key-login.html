@@ -2,13 +2,11 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <link rel="icon" type="image/webp" href="https://static.wikitide.net/deltaexscpcswiki/2/26/Group_1.png"/>
     <link rel="shortcut icon" type="image/webp" href="https://static.wikitide.net/deltaexscpcswiki/2/26/Group_1.png"/>
-    
-    <!-- для разных размеров -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    <title>DELTAxEX :: Вход по ключу</title>
+    <title>DELTAxEX :: Вход по ключу доступа</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -19,115 +17,489 @@
         padding: 0;
         box-sizing: border-box;
       }
+
       :root {
-        --bg-dark: #0a0d10;
-        --bg-card: rgba(20, 24, 30, 0.6);
-        --border-color: rgba(60, 70, 85, 0.3);
-        --text-primary: #e8eaed;
+        --bg-dark: #07090e;
+        --bg-card: rgba(13, 17, 24, 0.75);
+        --bg-sidebar: rgba(9, 11, 16, 0.85);
+        --bg-input: rgba(22, 28, 38, 0.6);
+        --border-color: rgba(255, 255, 255, 0.05);
+        --border-hover: rgba(59, 157, 111, 0.4);
+        --text-primary: #f3f4f6;
         --text-secondary: #9ca3af;
         --accent-green: #3b9d6f;
+        --accent-hover: #45b07e;
+        --glass-bg: rgba(255, 255, 255, 0.02);
+        --shadow-glow: 0 0 20px rgba(59, 157, 111, 0.2);
+        --danger: #ef4444;
+        --warning: #fb923c;
+        --transition-default: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
       }
+
       body {
-        font-family: "Inter", sans-serif;
-        background: linear-gradient(135deg, #0a0d10, #151a22);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top right, #121824 0%, var(--bg-dark) 100%);
         color: var(--text-primary);
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow-x: hidden;
+        padding: 20px;
+        position: relative;
       }
-      .card {
+
+      /* Анимированная сетка как в DASHBOARD */
+      body::before {
+        content: "";
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(59, 157, 111, 0.02) 1px,
+          transparent 1px
+        );
+        background-size: 40px 40px;
+        animation: gridMove 40s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      @keyframes gridMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(40px, 40px); }
+      }
+
+      /* Контейнер с z-index поверх сетки */
+      .key-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Карточка в стиле DASHBOARD */
+      .key-card {
         background: var(--bg-card);
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 40px;
+        border-radius: 28px;
+        padding: 48px 40px;
+        width: 100%;
         text-align: center;
-        max-width: 420px;
-        width: 90%;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+        transition: var(--transition-default);
+        animation: fadeInBlur 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
       }
-      .card h2 {
-        font-size: 24px;
-        margin-bottom: 8px;
+
+      .key-card:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-4px);
+        box-shadow: 0 28px 56px rgba(0, 0, 0, 0.4);
       }
-      .card p {
-        color: var(--text-secondary);
-        font-size: 14px;
+
+      @keyframes fadeInBlur {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+          filter: blur(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
+        }
+      }
+
+      /* Логотип */
+      .logo {
         margin-bottom: 24px;
       }
-      .key-input {
-        background: rgba(30, 35, 42, 0.5);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 16px;
-        color: white;
-        font-size: 14px;
-        text-align: center;
-        width: 100%;
-        font-family: monospace;
-        margin-bottom: 16px;
+
+      .logo h2 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #e4f9f0 0%, #3b9d6f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
       }
-      .btn {
-        padding: 14px 28px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        background: linear-gradient(135deg, var(--accent-green), #48b583);
-        color: white;
-        width: 100%;
+
+      .logo p {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        font-weight: 500;
       }
-      .error {
-        color: #ef4444;
-        font-size: 13px;
-        margin-top: 8px;
+
+      /* Иконка ключа */
+      .key-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(59, 157, 111, 0.1);
+        border: 1px solid rgba(59, 157, 111, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px auto;
+        transition: var(--transition-default);
       }
-      .back-link {
+
+      .key-icon i {
+        font-size: 32px;
+        color: var(--accent-green);
+      }
+
+      .key-card:hover .key-icon {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-glow);
+      }
+
+      /* Заголовки */
+      .key-card h2 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 10px;
+        letter-spacing: -0.3px;
+      }
+
+      .key-card .subtitle {
         color: var(--text-secondary);
         font-size: 13px;
-        margin-top: 16px;
-        display: block;
-        text-decoration: none;
+        margin-bottom: 32px;
+        line-height: 1.5;
       }
+
+      /* Поле ввода как в панели */
+      .input-group {
+        margin-bottom: 24px;
+        text-align: left;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .key-input {
+        width: 100%;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 16px 20px;
+        color: var(--text-primary);
+        font-size: 15px;
+        font-family: 'Fira Mono', 'Courier New', monospace;
+        transition: var(--transition-default);
+        letter-spacing: 0.5px;
+      }
+
+      .key-input:hover {
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(22, 28, 38, 0.7);
+      }
+
+      .key-input:focus {
+        outline: none;
+        border-color: var(--accent-green);
+        background: rgba(22, 28, 38, 0.8);
+        box-shadow: 0 0 0 4px rgba(59, 157, 111, 0.12);
+      }
+
+      .key-input::placeholder {
+        color: rgba(156, 163, 175, 0.5);
+        font-family: 'Inter', monospace;
+        font-size: 13px;
+      }
+
+      /* Кнопка входа */
+      .btn {
+        width: 100%;
+        padding: 16px 28px;
+        border-radius: 16px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-default);
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-family: inherit;
+        background: var(--accent-green);
+        color: #fff;
+        box-shadow: var(--shadow-glow);
+        margin-bottom: 20px;
+      }
+
+      .btn:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(59, 157, 111, 0.35);
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      /* Ошибка */
+      .error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 12px;
+        padding: 12px;
+        color: #f87171;
+        font-size: 13px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .error i {
+        font-size: 14px;
+      }
+
+      /* Ссылка назад */
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        text-decoration: none;
+        padding: 10px 16px;
+        border-radius: 12px;
+        transition: var(--transition-default);
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--border-color);
+      }
+
       .back-link:hover {
         color: var(--accent-green);
+        border-color: var(--border-hover);
+        background: rgba(59, 157, 111, 0.05);
+        transform: translateX(-4px);
+      }
+
+      /* Адаптивность */
+      @media (max-width: 560px) {
+        .key-card {
+          padding: 32px 24px;
+          border-radius: 24px;
+        }
+        
+        .key-card h2 {
+          font-size: 22px;
+        }
+        
+        .key-icon {
+          width: 56px;
+          height: 56px;
+        }
+        
+        .key-icon i {
+          font-size: 26px;
+        }
+        
+        .key-input {
+          padding: 14px 16px;
+          font-size: 14px;
+        }
+        
+        .btn {
+          padding: 14px 24px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        body {
+          padding: 16px;
+        }
+        
+        .key-card {
+          padding: 28px 20px;
+        }
+        
+        .key-card h2 {
+          font-size: 20px;
+        }
+        
+        .subtitle {
+          font-size: 12px;
+        }
+      }
+
+      /* Анимация пульсации для кнопки */
+      .btn {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease-out, height 0.4s ease-out;
+      }
+
+      .btn:active::after {
+        width: 300px;
+        height: 300px;
+      }
+
+      /* Стили для скролла */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-dark);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--accent-green);
+        border-radius: 10px;
       }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h2><i class="fas fa-key"></i> Вход по ключу доступа</h2>
-      <p>Введите персональный ключ доступа</p>
-      <input
-        type="text"
-        id="key"
-        class="key-input"
-        placeholder="dexk_..."
-        autofocus
-      />
-      <button class="btn" onclick="login()">Войти</button>
-      <p class="error" id="error"></p>
-      <a href="/" class="back-link"
-        ><i class="fas fa-arrow-left"></i> На главную</a
-      >
+    <div class="key-container">
+      <div class="key-card">
+        <div class="logo">
+          <h2><i class="fas fa-angle-double-right"></i> DELTAxEX <i class="fas fa-angle-double-left"></i></h2>
+          <p>CSManager Panel</p>
+        </div>
+        
+        <div class="key-icon">
+          <i class="fas fa-key"></i>
+        </div>
+        
+        <h2>Вход по ключу доступа</h2>
+        <p class="subtitle">Введите персональный ключ для доступа к панели управления</p>
+        
+        <div class="input-group">
+          <label><i class="fas fa-lock"></i> Ключ доступа</label>
+          <input
+            type="text"
+            id="key"
+            class="key-input"
+            placeholder="dexk_xxxxxxxxxxxxxxxx"
+            autofocus
+            autocomplete="off"
+          />
+        </div>
+        
+        <button class="btn" onclick="login()">
+          <i class="fas fa-arrow-right-to-bracket"></i> Войти
+        </button>
+        
+        <div id="errorContainer" style="display: none;">
+          <div class="error" id="error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span></span>
+          </div>
+        </div>
+        
+        <a href="/" class="back-link">
+          <i class="fas fa-arrow-left"></i> На главную
+        </a>
+      </div>
     </div>
+    
     <script>
       async function login() {
-        const key = document.getElementById("key").value.trim();
-        if (!key)
-          return (document.getElementById("error").textContent =
-            "Введите ключ");
-        const res = await fetch("/auth/key", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key }),
-        });
-        const data = await res.json();
-        if (data.success) window.location.href = data.redirect;
-        else
-          document.getElementById("error").textContent = data.error || "Ошибка";
+        const keyInput = document.getElementById("key");
+        const key = keyInput.value.trim();
+        const errorContainer = document.getElementById("errorContainer");
+        const errorSpan = document.querySelector("#error span");
+        
+        if (!key) {
+          errorSpan.textContent = "Пожалуйста, введите ключ доступа";
+          errorContainer.style.display = "block";
+          keyInput.style.borderColor = "var(--danger)";
+          setTimeout(() => {
+            keyInput.style.borderColor = "";
+          }, 2000);
+          return;
+        }
+        
+        // Показываем состояние загрузки
+        const btn = document.querySelector(".btn");
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Проверка...';
+        btn.disabled = true;
+        
+        try {
+          const res = await fetch("/auth/key", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key }),
+          });
+          const data = await res.json();
+          
+          if (data.success) {
+            // Успешный вход
+            btn.innerHTML = '<i class="fas fa-check"></i> Успешно!';
+            setTimeout(() => {
+              window.location.href = data.redirect || "/dashboard";
+            }, 500);
+          } else {
+            // Ошибка
+            errorSpan.textContent = data.error || "Неверный ключ доступа";
+            errorContainer.style.display = "block";
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            keyInput.style.borderColor = "var(--danger)";
+            setTimeout(() => {
+              keyInput.style.borderColor = "";
+            }, 2000);
+          }
+        } catch (err) {
+          errorSpan.textContent = "Ошибка соединения. Попробуйте позже.";
+          errorContainer.style.display = "block";
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
       }
+      
+      // Обработка нажатия Enter
+      document.getElementById("key").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          login();
+        }
+      });
+      
+      // Скрытие ошибки при вводе
+      document.getElementById("key").addEventListener("input", function() {
+        const errorContainer = document.getElementById("errorContainer");
+        errorContainer.style.display = "none";
+        this.style.borderColor = "";
+      });
     </script>
   </body>
 </html>
