@@ -2,59 +2,387 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="shortcut icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    
-    <!-- для разных размеров -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    <title>DELTAxEX :: 404</title>
+    <title>DELTAxEX :: 404 — Страница не найдена</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
-      /* глобальные стили + стили карточки ошибки */
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
+
       :root {
-        --bg-dark: #0a0d10;
-        --bg-card: rgba(20, 24, 30, 0.6);
-        --bg-sidebar: rgba(15, 18, 23, 0.85);
-        --bg-input: rgba(30, 35, 42, 0.5);
-        --border-color: rgba(60, 70, 85, 0.3);
-        --text-primary: #e8eaed;
+        --bg-dark: #07090e;
+        --bg-card: rgba(13, 17, 24, 0.75);
+        --bg-sidebar: rgba(9, 11, 16, 0.85);
+        --bg-input: rgba(22, 28, 38, 0.6);
+        --border-color: rgba(255, 255, 255, 0.05);
+        --border-hover: rgba(59, 157, 111, 0.4);
+        --text-primary: #f3f4f6;
         --text-secondary: #9ca3af;
         --accent-green: #3b9d6f;
-        --accent-hover: #48b583;
-        --glass-bg: rgba(25, 30, 38, 0.4);
-        --shadow-glow: 0 4px 24px rgba(59, 157, 111, 0.15);
+        --accent-hover: #45b07e;
+        --glass-bg: rgba(255, 255, 255, 0.02);
+        --shadow-glow: 0 0 20px rgba(59, 157, 111, 0.2);
+        --warning: #fb923c;
+        --danger: #ef4444;
+        --transition-default: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
       }
+
       body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top right, #121824 0%, var(--bg-dark) 100%);
+        color: var(--text-primary);
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
-        background: radial-gradient(
-          circle,
-          rgba(59, 157, 111, 0.03) 1px,
-          transparent 1px
-        );
+        overflow-x: hidden;
+        padding: 20px;
+        position: relative;
       }
 
+      /* Анимированная сетка как в DASHBOARD */
+      body::before {
+        content: "";
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(59, 157, 111, 0.02) 1px,
+          transparent 1px
+        );
+        background-size: 40px 40px;
+        animation: gridMove 40s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      @keyframes gridMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(40px, 40px); }
+      }
+
+      /* Контейнер */
+      .error-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Карточка ошибки в стиле DASHBOARD */
       .error-card {
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 32px;
+        padding: 56px 48px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+        transition: var(--transition-default);
+        animation: fadeInBlur 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      }
+
+      .error-card:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.4);
+      }
+
+      @keyframes fadeInBlur {
+        from {
+          opacity: 0;
+          transform: translateY(25px);
+          filter: blur(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
+        }
+      }
+
+      /* Логотип */
+      .logo {
+        margin-bottom: 28px;
+      }
+
+      .logo h2 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #e4f9f0 0%, #3b9d6f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
+      }
+
+      .logo p {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      /* Иконка ошибки с анимацией */
+      .error-icon {
+        width: 100px;
+        height: 100px;
+        background: rgba(251, 146, 60, 0.08);
+        border: 1px solid rgba(251, 146, 60, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 28px auto;
+        transition: var(--transition-default);
+        animation: pulseGlow 2s ease-in-out infinite;
+      }
+
+      .error-icon i {
+        font-size: 48px;
+        color: var(--warning);
+        filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.3));
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.2);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 0 0 15px rgba(251, 146, 60, 0);
+        }
+      }
+
+      .error-card:hover .error-icon {
+        transform: scale(1.08);
+      }
+
+      /* Код ошибки */
+      .error-code {
+        font-size: 88px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fb923c 0%, #ef4444 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 4px;
+        margin-bottom: 16px;
+        line-height: 1;
+      }
+
+      /* Заголовок */
+      .error-card h2 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 12px;
+        letter-spacing: -0.3px;
+      }
+
+      /* Описание */
+      .error-message {
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 32px;
+        max-width: 380px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Кнопка */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 32px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-default);
+        border: 1px solid transparent;
+        text-decoration: none;
+        font-family: inherit;
+        background: var(--accent-green);
+        color: #fff;
+        box-shadow: var(--shadow-glow);
+      }
+
+      .btn:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(59, 157, 111, 0.35);
+      }
+
+      .btn:active {
+        transform: scale(0.97);
+      }
+
+      /* Дополнительная информация */
+      .help-text {
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .help-text a {
+        color: var(--accent-green);
+        text-decoration: none;
+        transition: var(--transition-default);
+      }
+
+      .help-text a:hover {
+        color: var(--accent-hover);
+        text-decoration: underline;
+      }
+
+      /* Адаптивность */
+      @media (max-width: 560px) {
+        .error-card {
+          padding: 40px 28px;
+          border-radius: 28px;
+        }
+
+        .error-code {
+          font-size: 64px;
+        }
+
+        .error-card h2 {
+          font-size: 22px;
+        }
+
+        .error-icon {
+          width: 80px;
+          height: 80px;
+        }
+
+        .error-icon i {
+          font-size: 38px;
+        }
+
+        .error-message {
+          font-size: 14px;
+        }
+
+        .btn {
+          padding: 12px 28px;
+          font-size: 13px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        body {
+          padding: 16px;
+        }
+
+        .error-card {
+          padding: 32px 20px;
+        }
+
+        .error-code {
+          font-size: 52px;
+        }
+
+        .error-card h2 {
+          font-size: 20px;
+        }
+
+        .logo h2 {
+          font-size: 20px;
+        }
+      }
+
+      /* Анимация пульсации для кнопки */
+      .btn {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease-out, height 0.4s ease-out;
+      }
+
+      .btn:active::after {
+        width: 300px;
+        height: 300px;
+      }
+
+      /* Стили для скролла */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-dark);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--accent-green);
+        border-radius: 10px;
       }
     </style>
   </head>
   <body>
-    <div class="error-card">
-      <i class="fas fa-exclamation-triangle" style="color: #fb923c"></i>
-      <h2>404 — Страница не найдена</h2>
-      <p>Запрашиваемая страница не существует.</p>
-      <a href="/" class="btn btn-secondary">На главную</a>
+    <div class="error-container">
+      <div class="error-card">
+        <div class="logo">
+          <h2><i class="fas fa-angle-double-right"></i> DELTAxEX <i class="fas fa-angle-double-left"></i></h2>
+          <p>CSManager Panel</p>
+        </div>
+
+        <div class="error-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+
+        <div class="error-code">404</div>
+        
+        <h2>Страница не найдена</h2>
+        
+        <p class="error-message">
+          К сожалению, запрашиваемая страница не существует или была перемещена.
+        </p>
+        
+        <a href="/" class="btn">
+          <i class="fas fa-arrow-left"></i> Вернуться на главную
+        </a>
+        
+        <div class="help-text">
+          <i class="fas fa-life-ring"></i> Нужна помощь? 
+          <a href="/auth/login">Попробуйте войти</a> или 
+          <a href="/">перейти на главную</a>
+        </div>
+      </div>
     </div>
   </body>
 </html>
