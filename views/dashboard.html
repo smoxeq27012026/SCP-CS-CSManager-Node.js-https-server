@@ -1601,9 +1601,10 @@
         if (userPermissions.viewModeration) {
           addNavItem("moderation", "Модерация", "fa-gavel", false);
         }
-        if (userPermissions.accessSettings || userPermissions.accessAdmin) {
-          addNavItem("settings", "Настройки", "fa-cog", false);
-        }
+        // Удаляем настройки полностью
+        // if (userPermissions.accessSettings || userPermissions.accessAdmin) {
+        //   addNavItem("settings", "Настройки", "fa-cog", false);
+        // }
       }
 
 
