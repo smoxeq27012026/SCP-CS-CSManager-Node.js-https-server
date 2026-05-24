@@ -1258,6 +1258,14 @@
             >
               <i class="fas fa-shield-haltered"></i> Загрузка...
             </button>
+            <button
+              class="btn btn-secondary"
+              style="width: 100%; margin-top: 8px"
+              id="btnAccessKey"
+              onclick="manageAccessKey()"
+            >
+              <i class="fas fa-key"></i> Загрузка...
+            </button>
           </div>
         </div>
       </div>
@@ -1358,6 +1366,15 @@
             </thead>
             <tbody></tbody>
           </table>
+        </section>
+
+        <section
+          id="settingsSection"
+          class="content-card"
+          style="display: none"
+        >
+          <h2 class="card-title">Настройки</h2>
+          <p class="card-subtitle">В разработке.</p>
         </section>
       </main>
 
@@ -1483,206 +1500,82 @@
     </div>
 
     <script>
-      let currentUser = null;
-      let userPermissions = {};
-      let currentServer = localStorage.getItem('selectedServer') || 'CLASSIC';
-      let refreshUserDataTimeout = null;
-
-      // ========== УНИВЕРСАЛЬНЫЕ ФУНКЦИИ ==========
-      function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-      }
-
-      // ========== TOAST УВЕДОМЛЕНИЯ ==========
-      let toastCount = 0;
-      let toasts = [];
-
-      function createToastContainer() {
-        const container = document.createElement("div");
-        container.className = "toast-container";
-        container.id = "toastContainer";
-        document.body.appendChild(container);
-        return container;
-      }
-
-      function removeToastById(id) {
-        const toast = document.getElementById(id);
-        if (toast) {
-          toast.classList.add("removing");
-          setTimeout(() => toast.remove(), 300);
-          toasts = toasts.filter((t) => t !== id);
-        }
-      }
-
-      function removeToast(id) {
-        removeToastById(id);
-      }
-
-      function showToast(title, message = "", type = "info") {
-        if (toasts.length >= 5) {
-          removeToast(toasts[0]);
-        }
-
-        const container = document.getElementById("toastContainer") || createToastContainer();
-
-        const icons = {
-          success: "fa-check-circle",
-          error: "fa-exclamation-circle",
-          warning: "fa-exclamation-triangle",
-          info: "fa-info-circle",
-        };
-
-        const toast = document.createElement("div");
-        toast.className = `toast ${type}`;
-        toast.id = "toast-" + ++toastCount;
-        toast.innerHTML = `
-          <i class="fas ${icons[type] || icons.info} toast-icon"></i>
-          <div class="toast-content">
-            <div class="toast-title">${title}</div>
-            ${message ? `<div class="toast-message">${message}</div>` : ""}
-          </div>
-          <button class="toast-close" onclick="removeToastById('${toast.id}')">×</button>
-          <div class="toast-progress"></div>
-        `;
-
-        container.appendChild(toast);
-        toasts.push(toast.id);
-        setTimeout(() => removeToastById(toast.id), 5000);
-      }
-
-      // ========== MODAL INPUT ==========
-      let inputResolve = null;
-
-      function showInputModal(title, text, placeholder = "", type = "text") {
-        document.getElementById("inputModalTitle").textContent = title;
-        document.getElementById("inputModalText").textContent = text;
-        const field = document.getElementById("inputModalField");
-        field.type = type;
-        field.placeholder = placeholder;
-        field.value = "";
-        document.getElementById("inputModal").classList.add("active");
-        field.focus();
-
-        return new Promise((resolve) => {
-          inputResolve = resolve;
-        });
-      }
-
-      function closeInputModal(value = null) {
-        document.getElementById("inputModal").classList.remove("active");
-        if (inputResolve) {
-          inputResolve(value);
-          inputResolve = null;
-        }
-      }
-
-      document.getElementById("inputModalConfirm").addEventListener("click", () => {
-        const value = document.getElementById("inputModalField").value.trim();
-        closeInputModal(value);
-      });
-
-      document.getElementById("inputModalField").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          const value = document.getElementById("inputModalField").value.trim();
-          closeInputModal(value);
-        }
-      });
-
-      // ========== CONFIRM MODAL ==========
-      let confirmResolve = null;
-
-      function showConfirmModal(title, text, btnText = "Подтвердить") {
-        document.getElementById("confirmModalTitle").textContent = title;
-        document.getElementById("confirmModalText").textContent = text;
-        document.getElementById("confirmModalBtn").textContent = btnText;
-        document.getElementById("confirmModal").classList.add("active");
-
-        return new Promise((resolve) => {
-          confirmResolve = resolve;
-        });
-      }
-
-      function closeConfirmModal(result = false) {
-        document.getElementById("confirmModal").classList.remove("active");
-        if (confirmResolve) {
-          confirmResolve(result);
-          confirmResolve = null;
-        }
-      }
-
-      document.getElementById("confirmModalBtn").addEventListener("click", () => {
-        closeConfirmModal(true);
-      });
-
-      document.getElementById("inputModal").addEventListener("click", (e) => {
-        if (e.target.id === "inputModal") closeInputModal();
-      });
-      document.getElementById("confirmModal").addEventListener("click", (e) => {
-        if (e.target.id === "confirmModal") closeConfirmModal(false);
-      });
-
-      // ========== 2FA ФУНКЦИИ ==========
-      function update2FAButton() {
-        fetch("/auth/2fa/status")
+      function updateAccessKeyButton() {
+        fetch("/api/me/access-key")
           .then((r) => r.json())
           .then((data) => {
-            const btn = document.getElementById("btn2FA");
-            if (data.enabled) {
-              btn.innerHTML = '<i class="fas fa-shield-haltered"></i> Отключить двухфакторку';
-              btn.onclick = disable2FA;
+            const btn = document.getElementById("btnAccessKey");
+            if (data.hasKey) {
+              btn.innerHTML =
+                '<i class="fas fa-key"></i> Перегенерировать ключ доступа';
+              btn.onclick = regenerateKey;
             } else {
-              btn.innerHTML = '<i class="fas fa-shield-haltered"></i> Включить двухфакторку';
-              btn.onclick = enable2FA;
+              btn.innerHTML =
+                '<i class="fas fa-key"></i> Сгенерировать ключ доступа';
+              btn.onclick = generateKey;
             }
           });
       }
 
-      function enable2FA() {
-        fetch("/auth/2fa/enable", { method: "POST" })
-          .then((r) => r.json())
-          .then((data) => {
-            if (data.success) {
-              const qrWin = window.open("", "_blank", "width=400,height=500");
-              qrWin.document.write(
-                `<html><head><title>QR-код 2FA</title><style>body{background:#0a0d10;color:white;font-family:sans-serif;text-align:center;padding:20px;}</style></head><body><h3>Отсканируйте QR-код</h3><img src="${data.qr}" style="max-width:250px;margin:20px;"><p style="font-size:12px;color:#9ca3af;">Или введите ключ вручную:</p><p style="background:#1a1f2a;padding:10px;border-radius:8px;font-family:monospace;">${data.secret}</p><p style="font-size:12px;color:#9ca3af;margin-top:20px;">После добавления введите код для подтверждения:</p><input id="confirmCode" placeholder="000000" maxlength="6" style="padding:12px;border-radius:8px;border:1px solid #3b3f4a;background:#1a1f2a;color:white;text-align:center;font-size:18px;"><br><button onclick="confirm()" style="margin-top:12px;padding:12px 24px;border-radius:8px;background:#3b9d6f;color:white;border:none;cursor:pointer;">Подтвердить</button><script>function confirm(){const c=document.getElementById('confirmCode').value;fetch('/auth/2fa/confirm-enable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c})}).then(r=>r.json()).then(d=>{if(d.success){opener.showToast('Успешно','2FA включена!','success');opener.update2FAButton();window.close();}else{opener.showToast('Ошибка',d.error,'error');}});}<\/script></body></html>`
-              );
-            } else {
-              showToast("Ошибка", data.error || "", "error");
-            }
-          });
-      }
-
-      async function disable2FA() {
-        const code = await showInputModal("Отключение 2FA", "Введите код из приложения для отключения:", "000000");
+      async function generateKey() {
+        const code = await showInputModal(
+          "Генерация ключа",
+          "Введите код 2FA для генерации ключа:",
+          "000000"
+        );
         if (!code) return;
-        fetch("/auth/2fa/disable", {
+        fetch("/api/me/access-key/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code }),
         })
           .then((r) => r.json())
-          .then((d) => {
+          .then(async (d) => {
             if (d.success) {
-              showToast("Успешно", "2FA отключена!", "success");
-              update2FAButton();
+              // Копируем в буфер обмена
+              try {
+                await navigator.clipboard.writeText(d.key);
+                showToast(
+                  "Ключ создан и скопирован!",
+                  "Ключ сохранён в буфер обмена. Храните его в надёжном месте.",
+                  "success"
+                );
+              } catch (err) {
+                // Если буфер не поддерживается — показываем ключ в модалке
+                showToast(
+                  "Ключ создан",
+                  "Браузер не поддерживает авто-копирование.",
+                  "warning"
+                );
+              }
+              updateAccessKeyButton();
             } else {
               showToast("Ошибка", d.error || "", "error");
             }
           });
       }
 
-      // ========== ОБНОВЛЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ ==========
-      async function refreshUserData() {
-        try {
-          const res = await fetch(`/api/me?server=${currentServer}`);
-          const data = await res.json();
-          if (data.discordId === "guest") {
-            window.location.href = "/auth/login";
-            return;
-          }
+      async function regenerateKey() {
+        const confirmed = await showConfirmModal(
+          "Перегенерация ключа",
+          "Старый ключ будет удалён. Продолжить?",
+          "Перегенерировать"
+        );
+        if (!confirmed) return;
+        generateKey();
+      }
+
+      // Вызови при загрузке
+      updateAccessKeyButton();
+
+      let currentUser = null;
+      let userPermissions = {};
+      let currentServer = localStorage.getItem('selectedServer') || 'CLASSIC';
+      let refreshUserDataTimeout = null;
+
+      fetch("/api/me")
+        .then((r) => r.json())
+        .then((data) => {
           currentUser = data;
           userPermissions = data.permissions || {};
           document.getElementById("userAvatar").src = data.avatar;
@@ -1690,18 +1583,15 @@
           const isGoogle = data.discordId?.startsWith('google_');
           const displayId = isGoogle ? data.discordId.replace('google_', '') : data.discordId;
           document.getElementById("userDiscordId").innerHTML = isGoogle ? `<i class="fab fa-google" style="color:#4285f4;"></i> ${displayId}` : `@${displayId}`;
+          if (data.discordId === "guest") window.location.href = "/auth/login";
           updateProfilePopup();
+          // Построить меню с учетом прав
           buildNavigation();
-          showSection(currentSection);
-        } catch (err) {
-          console.error("refreshUserData error:", err);
-          if (err.message?.includes("401") || err.message?.includes("403")) {
-            window.location.href = "/auth/login";
-          }
-        }
-      }
+          // Загрузить начальную секцию (по умолчанию "users")
+          showSection("users");
+        })
+        .catch(() => (window.location.href = "/auth/login"));
 
-      // ========== НАВИГАЦИЯ ==========
       let currentSection = "users";
 
       function buildNavigation() {
@@ -1711,8 +1601,11 @@
         if (userPermissions.viewModeration) {
           addNavItem("moderation", "Модерация", "fa-gavel", false);
         }
-        // Настройки удалены полностью
+        if (userPermissions.accessSettings || userPermissions.accessAdmin) {
+          addNavItem("settings", "Настройки", "fa-cog", false);
+        }
       }
+
 
       function addNavItem(target, text, icon, isActive) {
         const navMenu = document.querySelector(".nav-menu");
@@ -1730,6 +1623,7 @@
         navMenu.appendChild(a);
       }
 
+
       function showSection(section) {
         currentSection = section;
         document.getElementById("usersSection").style.display = "none";
@@ -1744,6 +1638,7 @@
           document.getElementById("moderationSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Модерация";
           
+          // Проверяем права для ТЕКУЩЕГО сервера
           const hasViewModeration = userPermissions.viewModeration;
           const hasInteractModeration = userPermissions.interactModeration;
           
@@ -1764,8 +1659,7 @@
           document.getElementById("pageTitle").textContent = "Настройки";
         }
       }
-
-      // ========== ПРОФИЛЬ ==========
+      
       function updateProfilePopup() {
         if (!currentUser) return;
         document.getElementById("popupAvatar").src = currentUser.avatar;
@@ -1792,7 +1686,7 @@
 
         const permsDiv = document.getElementById("popupPermissions");
         permsDiv.innerHTML = "";
-        const permNamesList = {
+        const permNames = {
           viewModeration: "Просмотр модерации",
           interactModeration: "Действия в модерации",
           deleteEntries: "Удаление записей",
@@ -1802,7 +1696,7 @@
         };
         let hasPerms = false;
         if (currentUser.permissions) {
-          for (const [key, label] of Object.entries(permNamesList)) {
+          for (const [key, label] of Object.entries(permNames)) {
             if (currentUser.permissions[key]) {
               hasPerms = true;
               const item = document.createElement("div");
@@ -1824,25 +1718,137 @@
         }
       }
 
+
+      document.getElementById("currentDate").textContent =
+        new Date().toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+      // Клик по профилю в сайдбаре
+      document.getElementById("profileCard").addEventListener("click", () => {
+        updateProfilePopup();
+        document.getElementById("profilePopup").classList.add("active");
+      });
+
       function closeProfilePopup() {
         document.getElementById("profilePopup").classList.remove("active");
       }
 
-      // ========== ПОИСК И ПОЛЬЗОВАТЕЛИ ==========
+      document.getElementById("profilePopup").addEventListener("click", (e) => {
+        if (e.target.id === "profilePopup") closeProfilePopup();
+      });
+
+      const navItems = document.querySelectorAll(".nav-item");
+      const sections = {
+        "#users": document.getElementById("usersSection"),
+        "#moderation": document.getElementById("moderationSection"),
+        "#settings": document.getElementById("settingsSection"),
+      };
+      navItems.forEach((item) => {
+        item.addEventListener("click", (e) => {
+          e.preventDefault();
+          const target = item.getAttribute("href");
+          navItems.forEach((n) => n.classList.remove("active"));
+          item.classList.add("active");
+          Object.values(sections).forEach((s) => (s.style.display = "none"));
+          if (sections[target]) sections[target].style.display = "block";
+          document.getElementById("pageTitle").textContent =
+            item.querySelector("span").textContent;
+          if (window.innerWidth <= 768)
+            document.getElementById("sidebar").classList.remove("active");
+          if (target === "#moderation") loadRetrievals();
+        });
+      });
+
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("active");
+      }
+
+      function setupServerDropdown() {
+        const trigger = document.getElementById('dropdownTrigger');
+        const menu = document.getElementById('dropdownMenu');
+        const options = document.querySelectorAll('.dropdown-option');
+        const selectedText = document.getElementById('selectedServerText');
+        
+        // Открытие/закрытие
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          menu.classList.toggle('show');
+          trigger.classList.toggle('active');
+        });
+        
+        // Выбор опции
+        options.forEach(opt => {
+          opt.addEventListener('click', () => {
+            const server = opt.getAttribute('data-server');
+            const serverName = opt.querySelector('span').textContent;
+            
+            // Обновляем отображение
+            selectedText.textContent = serverName;
+            
+            // Обновляем выбранный класс
+            options.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            
+            // Сохраняем в localStorage
+            currentServer = server;
+            localStorage.setItem('selectedServer', server);
+            
+            // Закрываем дропдаун
+            menu.classList.remove('show');
+            trigger.classList.remove('active');
+            
+            // Обновляем данные пользователя
+            if (refreshUserDataTimeout) clearTimeout(refreshUserDataTimeout);
+            refreshUserDataTimeout = setTimeout(() => {
+              refreshUserData();
+            }, 200);
+          });
+        });
+        
+        // Закрытие при клике вне
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.custom-dropdown')) {
+            menu.classList.remove('show');
+            trigger.classList.remove('active');
+          }
+        });
+        
+        // Восстанавливаем выбранное значение из localStorage
+        const savedServer = localStorage.getItem('selectedServer');
+        if (savedServer) {
+          const selectedOption = document.querySelector(`.dropdown-option[data-server="${savedServer}"]`);
+          if (selectedOption) {
+            selectedOption.click();
+          }
+        }
+      }
+
+      // Инициализация
+      document.addEventListener("DOMContentLoaded", () => {
+        setupServerDropdown();
+        refreshUserData();
+      });
+
+
       function searchUsers(page = 1) {
-        const discordId = document.getElementById("searchDiscordId").value.trim();
+        const discordId = document
+          .getElementById("searchDiscordId")
+          .value.trim();
         const gameId = document.getElementById("searchGameId").value.trim();
         let url = `/api/users?page=${page}&limit=4`;
-        if (discordId) url += `&discordId=${encodeURIComponent(discordId)}`;
-        if (gameId) url += `&uid=${encodeURIComponent(gameId)}`;
-        
+        if (discordId) url += `&discordId=${discordId}`;
+        if (gameId) url += `&uid=${gameId}`;
         fetch(url)
           .then((r) => r.json())
           .then((data) => {
             const list = document.getElementById("userList");
             list.innerHTML = "";
             if (!data.users || data.users.length === 0) {
-              list.innerHTML = '<p style="color:var(--text-secondary)">Пользователи не найдены.</p>';
+              list.innerHTML =
+                '<p style="color:var(--text-secondary)">Пользователи не найдены.</p>';
               document.getElementById("pagination").innerHTML = "";
               return;
             }
@@ -1850,14 +1856,10 @@
               const card = document.createElement("div");
               card.className = "user-card";
               card.onclick = () => openUserModal(user);
-              card.innerHTML = `<img src="${user.avatar}" class="user-avatar"><div class="user-info"><div class="user-name">${escapeHtml(user.username)}</div><div class="user-id">ID: ${escapeHtml(user.discordId)}</div></div>`;
+              card.innerHTML = `<img src="${user.avatar}" class="user-avatar"><div class="user-info"><div class="user-name">${user.username}</div><div class="user-id">ID: ${user.discordId}</div></div>`;
               list.appendChild(card);
             });
             renderPagination(data.page, data.totalPages);
-          })
-          .catch(err => {
-            console.error(err);
-            showToast("Ошибка загрузки пользователей", "", "error");
           });
       }
 
@@ -1865,13 +1867,21 @@
         const pag = document.getElementById("pagination");
         pag.innerHTML = "";
         if (totalPages <= 1) return;
-        pag.style.cssText = "display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap;";
+        pag.style.cssText =
+          "display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap;";
 
         const prevBtn = document.createElement("button");
         prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        prevBtn.style.cssText = "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.3s;";
-        prevBtn.onmouseenter = () => { prevBtn.style.borderColor = "var(--accent-green)"; prevBtn.style.color = "var(--accent-green)"; };
-        prevBtn.onmouseleave = () => { prevBtn.style.borderColor = "var(--border-color)"; prevBtn.style.color = "var(--text-secondary)"; };
+        prevBtn.style.cssText =
+          "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.3s;";
+        prevBtn.onmouseenter = () => {
+          prevBtn.style.borderColor = "var(--accent-green)";
+          prevBtn.style.color = "var(--accent-green)";
+        };
+        prevBtn.onmouseleave = () => {
+          prevBtn.style.borderColor = "var(--border-color)";
+          prevBtn.style.color = "var(--text-secondary)";
+        };
         if (currentPage === 1) {
           prevBtn.style.opacity = "0.3";
           prevBtn.style.cursor = "not-allowed";
@@ -1883,16 +1893,29 @@
         const maxVisible = 4;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
         let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-        if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+        if (endPage - startPage < maxVisible - 1)
+          startPage = Math.max(1, endPage - maxVisible + 1);
 
         for (let i = startPage; i <= endPage; i++) {
           const pageBtn = document.createElement("button");
           pageBtn.textContent = i;
-          pageBtn.style.cssText = "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:13px;font-weight:500;transition:all 0.3s;";
-          pageBtn.onmouseenter = () => { if (i !== currentPage) { pageBtn.style.borderColor = "var(--accent-green)"; pageBtn.style.color = "var(--accent-green)"; } };
-          pageBtn.onmouseleave = () => { if (i !== currentPage) { pageBtn.style.borderColor = "var(--border-color)"; pageBtn.style.color = "var(--text-secondary)"; } };
+          pageBtn.style.cssText =
+            "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:13px;font-weight:500;transition:all 0.3s;";
+          pageBtn.onmouseenter = () => {
+            if (i !== currentPage) {
+              pageBtn.style.borderColor = "var(--accent-green)";
+              pageBtn.style.color = "var(--accent-green)";
+            }
+          };
+          pageBtn.onmouseleave = () => {
+            if (i !== currentPage) {
+              pageBtn.style.borderColor = "var(--border-color)";
+              pageBtn.style.color = "var(--text-secondary)";
+            }
+          };
           if (i === currentPage) {
-            pageBtn.style.background = "linear-gradient(135deg, var(--accent-green), var(--accent-hover))";
+            pageBtn.style.background =
+              "linear-gradient(135deg, var(--accent-green), var(--accent-hover))";
             pageBtn.style.color = "white";
             pageBtn.style.borderColor = "transparent";
           } else {
@@ -1903,9 +1926,16 @@
 
         const nextBtn = document.createElement("button");
         nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        nextBtn.style.cssText = "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.3s;";
-        nextBtn.onmouseenter = () => { nextBtn.style.borderColor = "var(--accent-green)"; nextBtn.style.color = "var(--accent-green)"; };
-        nextBtn.onmouseleave = () => { nextBtn.style.borderColor = "var(--border-color)"; nextBtn.style.color = "var(--text-secondary)"; };
+        nextBtn.style.cssText =
+          "width:36px;height:36px;border-radius:50%;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.3s;";
+        nextBtn.onmouseenter = () => {
+          nextBtn.style.borderColor = "var(--accent-green)";
+          nextBtn.style.color = "var(--accent-green)";
+        };
+        nextBtn.onmouseleave = () => {
+          nextBtn.style.borderColor = "var(--border-color)";
+          nextBtn.style.color = "var(--text-secondary)";
+        };
         if (currentPage === totalPages) {
           nextBtn.style.opacity = "0.3";
           nextBtn.style.cursor = "not-allowed";
@@ -1920,6 +1950,7 @@
       }
 
       function openUserModal(user) {
+        // Загружаем полный профиль пользователя
         fetch(`/api/player/${user.discordId}`)
           .then(r => r.json())
           .then(playerData => {
@@ -1934,15 +1965,22 @@
             document.getElementById("modalGameId").textContent = playerData.uid || "—";
             
             const btnSet = document.getElementById("btnSetUid");
+            
+            // Проверяем: это свой профиль ИЛИ пользователь owner/admin
             const isOwner = currentUser?.discordId === "1227091345806594048";
             const isSelf = playerData.discordId === currentUser?.discordId;
             
             if (isSelf) {
+              // Свой профиль — можно менять UID
               btnSet.textContent = "Изменить Game ID";
               btnSet.disabled = false;
               btnSet.style.opacity = "1";
               btnSet.onclick = async () => {
-                const newUid = await showInputModal("Изменение UID", "Введите новый Game ID:", "Например: 12345");
+                const newUid = await showInputModal(
+                  "Изменение UID",
+                  "Введите новый Game ID:",
+                  "Например: 12345"
+                );
                 if (!newUid) return;
                 fetch("/api/me/uid", {
                   method: "POST",
@@ -1963,48 +2001,59 @@
                   });
               };
             } else if (isOwner || userPermissions.canSetUID) {
+              // Owner или есть право canSetUID — может менять чужой UID
               btnSet.textContent = "Изменить Game ID";
               btnSet.disabled = false;
               btnSet.style.opacity = "1";
               btnSet.onclick = async () => {
-                const newUid = await showInputModal("Изменение UID", `Введите новый Game ID для ${playerData.username}:`, "Например: 12345");
+                const newUid = await showInputModal(
+                  "Изменение UID",
+                  `Введите новый Game ID для ${playerData.username}:`,
+                  "Например: 12345"
+                );
                 if (!newUid) return;
-                const response = await fetch("/api/me/uid", {
+                fetch("/api/me/uid", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ uid: newUid, discordId: playerData.discordId }),
-                });
-                const d = await response.json();
-                if (d.success) {
-                  document.getElementById("modalGameId").textContent = newUid;
-                  showToast("Успешно", `Game ID для ${playerData.username} обновлён!`, "success");
-                  searchUsers();
-                  if (playerData.discordId === currentUser?.discordId) {
-                    currentUser.uid = newUid;
-                    updateProfilePopup();
-                  }
-                } else {
-                  showToast("Ошибка", d.error || "", "error");
-                }
+                })
+                  .then((r) => r.json())
+                  .then((d) => {
+                    if (d.success) {
+                      document.getElementById("modalGameId").textContent = newUid;
+                      showToast("Успешно", "Game ID обновлён!", "success");
+                      searchUsers();
+                    } else {
+                      showToast("Ошибка", d.error || "", "error");
+                    }
+                  });
               };
             } else {
+              // Чужой профиль — кнопка неактивна
               btnSet.textContent = "Game ID";
               btnSet.disabled = true;
               btnSet.style.opacity = "0.5";
               btnSet.onclick = () => showToast("Нет прав", "Вы не можете изменить чужой UID", "warning");
             }
             
+            // Показываем роли и права
+            const modalContent = document.querySelector("#userModal .modal-content");
+            
+            // Удаляем старые блоки ролей и прав, если есть
             const oldRoles = document.getElementById("modalRoles");
             const oldPerms = document.getElementById("modalPermissions");
             if (oldRoles) oldRoles.remove();
             if (oldPerms) oldPerms.remove();
             
+            // Добавляем блок с ролями
             const rolesDiv = document.createElement("div");
             rolesDiv.id = "modalRoles";
             rolesDiv.style.cssText = "margin-bottom: 16px;";
             rolesDiv.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">РОЛИ</p>';
+            
             const rolesContainer = document.createElement("div");
             rolesContainer.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;";
+            
             if (playerData.roles && playerData.roles.length > 0) {
               playerData.roles.forEach(role => {
                 const span = document.createElement("span");
@@ -2018,10 +2067,12 @@
             }
             rolesDiv.appendChild(rolesContainer);
             
+            // Добавляем блок с правами
             const permsDiv = document.createElement("div");
             permsDiv.id = "modalPermissions";
             permsDiv.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">ПРАВА</p>';
-            const permNamesList = {
+            
+            const permNames = {
               viewModeration: "Просмотр модерации",
               interactModeration: "Действия в модерации",
               deleteEntries: "Удаление записей",
@@ -2029,9 +2080,11 @@
               accessAdmin: "Доступ к админке",
               canSetUID: "Смена UID",
             };
+            
             const permsList = document.createElement("div");
             let hasPerms = false;
-            for (const [key, label] of Object.entries(permNamesList)) {
+            
+            for (const [key, label] of Object.entries(permNames)) {
               if (playerData.permissions[key]) {
                 hasPerms = true;
                 const item = document.createElement("div");
@@ -2040,6 +2093,7 @@
                 permsList.appendChild(item);
               }
             }
+            
             if (playerData.isOwner) {
               const ownerItem = document.createElement("div");
               ownerItem.style.cssText = "font-size:12px;color:#fb923c;padding:4px 0;";
@@ -2048,11 +2102,14 @@
             } else if (!hasPerms) {
               permsList.innerHTML = '<span style="color:var(--text-secondary);font-size:12px;">Нет прав</span>';
             }
+            
             permsDiv.appendChild(permsList);
             
+            // Вставляем роли и права перед кнопками
             const buttonGroup = document.querySelector("#userModal .button-group");
             buttonGroup.parentNode.insertBefore(permsDiv, buttonGroup);
             buttonGroup.parentNode.insertBefore(rolesDiv, permsDiv);
+            
             document.getElementById("userModal").classList.add("active");
           })
           .catch(err => {
@@ -2067,17 +2124,42 @@
         if (e.target.id === "userModal") closeModal();
       });
 
-      // ========== РОЗЫСК ==========
+      function addRetrieval() {
+        const uid = document.getElementById("modUid").value.trim();
+        const reason = document.getElementById("modReason").value.trim();
+        const time = document.getElementById("modTime").value;
+        if (!uid || !reason || !time)
+          return showToast("Заполните все поля", "", "warning");
+        if (!/^\d+$/.test(uid))
+          return showToast("UID должен содержать только цифры", "", "error");
+        fetch("/api/retrieval", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid, reason, time: parseInt(time) }),
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success) {
+              showToast("Добавлено!", "", "success");
+              loadRetrievals();
+            } else {
+              showToast("Ошибка", d.error || "", "error");
+            }
+          });
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
       function loadRetrievals() {
-        fetch(`/api/retrieval?server=${currentServer}`)
+        fetch("/api/retrieval")
           .then((r) => r.json())
           .then((data) => {
             const tbody = document.querySelector("#retrievalTable tbody");
             tbody.innerHTML = "";
-            if (data.error) {
-              tbody.innerHTML = `<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">${data.error}</td></tr>`;
-              return;
-            }
             (data.retrievals || []).forEach((entry) => {
               const row = document.createElement("tr");
               row.style.cssText = "background:var(--bg-input);backdrop-filter:blur(10px);";
@@ -2096,125 +2178,83 @@
               tbody.appendChild(row);
             });
             if (!data.retrievals || data.retrievals.length === 0) {
-              tbody.innerHTML = `<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">Нет активных розысков на сервере ${currentServer}</td></tr>`;
+              tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">Нет активных розысков</td></tr>';
             }
-          })
-          .catch(err => {
-            console.error(err);
-            showToast("Ошибка загрузки розысков", "", "error");
           });
       }
 
-      function addRetrieval() {
-        const uid = document.getElementById("modUid").value.trim();
-        const reason = document.getElementById("modReason").value.trim();
-        const time = document.getElementById("modTime").value;
-        if (!uid || !reason || !time) return showToast("Заполните все поля", "", "warning");
-        if (!/^\d+$/.test(uid)) return showToast("UID должен содержать только цифры", "", "error");
-        
-        fetch(`/api/retrieval?server=${currentServer}`, {
+
+      function clearRetrieval(uid) {
+        fetch(`/api/retrieval/clear/${uid}`)
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success) loadRetrievals();
+          });
+      }
+
+      function update2FAButton() {
+        fetch("/auth/2fa/status")
+          .then((r) => r.json())
+          .then((data) => {
+            const btn = document.getElementById("btn2FA");
+            if (data.enabled) {
+              btn.innerHTML =
+                '<i class="fas fa-shield-haltered"></i> Отключить двухфакторку';
+              btn.onclick = disable2FA;
+            } else {
+              btn.innerHTML =
+                '<i class="fas fa-shield-haltered"></i> Включить двухфакторку';
+              btn.onclick = enable2FA;
+            }
+          });
+      }
+
+      function enable2FA() {
+        fetch("/auth/2fa/enable", { method: "POST" })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.success) {
+              const qrWin = window.open("", "_blank", "width=400,height=500");
+              qrWin.document.write(
+                `<html><head><title>QR-код 2FA</title><style>body{background:#0a0d10;color:white;font-family:sans-serif;text-align:center;padding:20px;}</style></head><body><h3>Отсканируйте QR-код</h3><img src="${data.qr}" style="max-width:250px;margin:20px;"><p style="font-size:12px;color:#9ca3af;">Или введите ключ вручную:</p><p style="background:#1a1f2a;padding:10px;border-radius:8px;font-family:monospace;">${data.secret}</p><p style="font-size:12px;color:#9ca3af;margin-top:20px;">После добавления введите код для подтверждения:</p><input id="confirmCode" placeholder="000000" maxlength="6" style="padding:12px;border-radius:8px;border:1px solid #3b3f4a;background:#1a1f2a;color:white;text-align:center;font-size:18px;"><br><button onclick="confirm()" style="margin-top:12px;padding:12px 24px;border-radius:8px;background:#3b9d6f;color:white;border:none;cursor:pointer;">Подтвердить</button><script>function confirm(){const c=document.getElementById('confirmCode').value;fetch('/auth/2fa/confirm-enable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c})}).then(r=>r.json()).then(d=>{if(d.success){opener.showToast('Успешно','2FA включена!','success');opener.update2FAButton();window.close();}else{opener.showToast('Ошибка',d.error,'error');}});}<\/script></body></html>`
+              );
+            } else {
+              showToast("Ошибка", data.error || "", "error");
+            }
+          });
+      }
+
+      async function disable2FA() {
+        const code = await showInputModal(
+          "Отключение 2FA",
+          "Введите код из приложения для отключения:",
+          "000000"
+        );
+        if (!code) return;
+        fetch("/auth/2fa/disable", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uid, reason, time: parseInt(time) }),
+          body: JSON.stringify({ code }),
         })
           .then((r) => r.json())
           .then((d) => {
             if (d.success) {
-              showToast("Добавлено в розыск на сервере " + currentServer, "", "success");
-              loadRetrievals();
-              document.getElementById("modUid").value = "";
-              document.getElementById("modReason").value = "";
-              document.getElementById("modTime").value = "";
+              showToast("Успешно", "2FA отключена!", "success");
+              update2FAButton();
             } else {
               showToast("Ошибка", d.error || "", "error");
             }
           });
       }
 
-      function clearRetrieval(uid) {
-        fetch(`/api/retrieval/clear/${uid}?server=${currentServer}`)
-          .then((r) => r.json())
-          .then((d) => {
-            if (d.success) loadRetrievals();
-            else showToast("Ошибка", d.error || "", "error");
-          });
-      }
-
-      // ========== DROPDOWN ==========
-      function setupServerDropdown() {
-        const trigger = document.getElementById('dropdownTrigger');
-        const menu = document.getElementById('dropdownMenu');
-        const options = document.querySelectorAll('.dropdown-option');
-        const selectedText = document.getElementById('selectedServerText');
-        
-        trigger.addEventListener('click', (e) => {
-          e.stopPropagation();
-          menu.classList.toggle('show');
-          trigger.classList.toggle('active');
-        });
-        
-        options.forEach(opt => {
-          opt.addEventListener('click', () => {
-            const server = opt.getAttribute('data-server');
-            const serverName = opt.querySelector('span').textContent;
-            selectedText.textContent = serverName;
-            options.forEach(o => o.classList.remove('selected'));
-            opt.classList.add('selected');
-            currentServer = server;
-            localStorage.setItem('selectedServer', server);
-            menu.classList.remove('show');
-            trigger.classList.remove('active');
-            if (refreshUserDataTimeout) clearTimeout(refreshUserDataTimeout);
-            refreshUserDataTimeout = setTimeout(() => {
-              refreshUserData();
-            }, 200);
-          });
-        });
-        
-        document.addEventListener('click', (e) => {
-          if (!e.target.closest('.custom-dropdown')) {
-            menu.classList.remove('show');
-            trigger.classList.remove('active');
+      async function refreshUserData() {
+        try {
+          const res = await fetch(`/api/me?server=${currentServer}`);
+          const data = await res.json();
+          if (data.discordId === "guest") {
+            window.location.href = "/auth/login";
+            return;
           }
-        });
-        
-        const savedServer = localStorage.getItem('selectedServer');
-        if (savedServer) {
-          const selectedOption = document.querySelector(`.dropdown-option[data-server="${savedServer}"]`);
-          if (selectedOption) {
-            selectedOption.click();
-          }
-        }
-      }
-
-      function toggleSidebar() {
-        document.getElementById("sidebar").classList.toggle("active");
-      }
-
-      // ========== ИНИЦИАЛИЗАЦИЯ ==========
-      document.getElementById("currentDate").textContent = new Date().toLocaleDateString("ru-RU", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
-
-      document.getElementById("profileCard").addEventListener("click", () => {
-        updateProfilePopup();
-        document.getElementById("profilePopup").classList.add("active");
-      });
-
-      document.getElementById("profilePopup").addEventListener("click", (e) => {
-        if (e.target.id === "profilePopup") closeProfilePopup();
-      });
-
-      document.addEventListener("DOMContentLoaded", () => {
-        setupServerDropdown();
-        refreshUserData();
-      });
-
-      fetch("/api/me")
-        .then((r) => r.json())
-        .then((data) => {
           currentUser = data;
           userPermissions = data.permissions || {};
           document.getElementById("userAvatar").src = data.avatar;
@@ -2222,12 +2262,162 @@
           const isGoogle = data.discordId?.startsWith('google_');
           const displayId = isGoogle ? data.discordId.replace('google_', '') : data.discordId;
           document.getElementById("userDiscordId").innerHTML = isGoogle ? `<i class="fab fa-google" style="color:#4285f4;"></i> ${displayId}` : `@${displayId}`;
-          if (data.discordId === "guest") window.location.href = "/auth/login";
           updateProfilePopup();
           buildNavigation();
-          showSection("users");
-        })
-        .catch(() => (window.location.href = "/auth/login"));
+          showSection(currentSection);
+        } catch (err) {
+          console.error("refreshUserData error:", err);
+          if (err.message?.includes("401") || err.message?.includes("403")) {
+            window.location.href = "/auth/login";
+          }
+        }
+      }
+
+
+
+      let toastCount = 0;
+      let toasts = [];
+
+      function showToast(title, message = "", type = "info") {
+        // Удаляем старые если больше 5
+        if (toasts.length >= 5) {
+          removeToast(toasts[0]);
+        }
+
+        const container =
+          document.getElementById("toastContainer") || createToastContainer();
+
+        const icons = {
+          success: "fa-check-circle",
+          error: "fa-exclamation-circle",
+          warning: "fa-exclamation-triangle",
+          info: "fa-info-circle",
+        };
+
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.id = "toast-" + ++toastCount;
+        toast.innerHTML = `
+              <i class="fas ${icons[type] || icons.info} toast-icon"></i>
+              <div class="toast-content">
+                  <div class="toast-title">${title}</div>
+                  ${
+                    message ? `<div class="toast-message">${message}</div>` : ""
+                  }
+              </div>
+              <button class="toast-close" onclick="removeToastById('${
+                toast.id
+              }')">×</button>
+              <div class="toast-progress"></div>
+          `;
+
+        container.appendChild(toast);
+        toasts.push(toast.id);
+
+        // Автоудаление через 5 секунд
+        setTimeout(() => removeToastById(toast.id), 5000);
+      }
+
+      function createToastContainer() {
+        const container = document.createElement("div");
+        container.className = "toast-container";
+        container.id = "toastContainer";
+        document.body.appendChild(container);
+        return container;
+      }
+
+      function removeToastById(id) {
+        const toast = document.getElementById(id);
+        if (toast) {
+          toast.classList.add("removing");
+          setTimeout(() => toast.remove(), 300);
+          toasts = toasts.filter((t) => t !== id);
+        }
+      }
+
+      function removeToast(id) {
+        removeToastById(id);
+      }
+
+      // ====== MODAL INPUT (замена prompt) ======
+      let inputResolve = null;
+
+      function showInputModal(title, text, placeholder = "", type = "text") {
+        document.getElementById("inputModalTitle").textContent = title;
+        document.getElementById("inputModalText").textContent = text;
+        const field = document.getElementById("inputModalField");
+        field.type = type;
+        field.placeholder = placeholder;
+        field.value = "";
+        document.getElementById("inputModal").classList.add("active");
+        field.focus();
+
+        return new Promise((resolve) => {
+          inputResolve = resolve;
+        });
+      }
+
+      function closeInputModal(value = null) {
+        document.getElementById("inputModal").classList.remove("active");
+        if (inputResolve) {
+          inputResolve(value);
+          inputResolve = null;
+        }
+      }
+
+      document
+        .getElementById("inputModalConfirm")
+        .addEventListener("click", () => {
+          const value = document.getElementById("inputModalField").value.trim();
+          closeInputModal(value);
+        });
+
+      document
+        .getElementById("inputModalField")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            const value = document
+              .getElementById("inputModalField")
+              .value.trim();
+            closeInputModal(value);
+          }
+        });
+
+      // ====== CONFIRM MODAL (замена confirm) ======
+      let confirmResolve = null;
+
+      function showConfirmModal(title, text, btnText = "Подтвердить") {
+        document.getElementById("confirmModalTitle").textContent = title;
+        document.getElementById("confirmModalText").textContent = text;
+        document.getElementById("confirmModalBtn").textContent = btnText;
+        document.getElementById("confirmModal").classList.add("active");
+
+        return new Promise((resolve) => {
+          confirmResolve = resolve;
+        });
+      }
+
+      function closeConfirmModal(result = false) {
+        document.getElementById("confirmModal").classList.remove("active");
+        if (confirmResolve) {
+          confirmResolve(result);
+          confirmResolve = null;
+        }
+      }
+
+      document
+        .getElementById("confirmModalBtn")
+        .addEventListener("click", () => {
+          closeConfirmModal(true);
+        });
+
+      // Закрытие модалок по клику вне
+      document.getElementById("inputModal").addEventListener("click", (e) => {
+        if (e.target.id === "inputModal") closeInputModal();
+      });
+      document.getElementById("confirmModal").addEventListener("click", (e) => {
+        if (e.target.id === "confirmModal") closeConfirmModal(false);
+      });
 
       update2FAButton();
       searchUsers();
