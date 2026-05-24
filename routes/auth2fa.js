@@ -57,9 +57,12 @@ router.post("/2fa/verify", async (req, res) => {
 
   if (verified) {
     req.session.totpVerified = true;
+    // Удаляем returnTo после успешной верификации
+    const returnTo = req.session.returnTo || `/${req.user.id}/dashboard/users`;
+    delete req.session.returnTo;
     return res.json({
       success: true,
-      redirect: `/${req.user.id}/dashboard/users`,
+      redirect: returnTo,
     });
   }
 
