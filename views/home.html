@@ -491,16 +491,12 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        // Генерация изометрической сетки только на ПК
         if (window.innerWidth > 768) {
           const bgContainer = document.getElementById('iso-bg');
           
-          // Создаем контейнер для сетки
           const gridContainer = document.createElement('div');
           gridContainer.className = 'isometric-grid';
           
-          // Рассчитываем количество плиток (делаем плотную сетку, чтобы покрыть весь экран с запасом)
-          // Увеличиваем количество, чтобы при повороте не было пустот
           const tileSize = 70;
           const cols = Math.ceil(window.innerWidth * 2.5 / tileSize);
           const rows = Math.ceil(window.innerHeight * 2.5 / tileSize);
@@ -514,9 +510,7 @@
           for (let i = 0; i < totalTiles; i++) {
             const tile = document.createElement('div');
             tile.className = 'isometric-tile';
-            
-            // Добавляем случайную небольшую задержку для анимации появления (опционально)
-            // tile.style.animationDelay = `${(i % 20) * 0.05}s`;
+            tile.style.animationDelay = `${(i % 20) * 0.05}s`;
             
             fragment.appendChild(tile);
           }
@@ -524,12 +518,9 @@
           gridContainer.appendChild(fragment);
           bgContainer.appendChild(gridContainer);
           
-          // Обработчик для плавного возврата цвета (убираем эффект, оставляем только наведение)
-          // Дополнительно: добавляем анимацию пульсации для фона
           let hue = 0;
           setInterval(() => {
             hue = (hue + 0.5) % 360;
-            // Очень медленная смена оттенка для всей сетки
             if (gridContainer) {
               gridContainer.style.filter = `hue-rotate(${hue}deg)`;
             }
@@ -537,7 +528,6 @@
         }
       });
       
-      // Обработка изменения размера окна (для регенерации при ресайзе)
       let resizeTimeout;
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
@@ -550,7 +540,7 @@
               const gridContainer = document.createElement('div');
               gridContainer.className = 'isometric-grid';
               
-              const tileSize = 70;
+              const tileSize = 100;
               const cols = Math.ceil(window.innerWidth * 2.5 / tileSize);
               const rows = Math.ceil(window.innerHeight * 2.5 / tileSize);
               const fragment = document.createDocumentFragment();
