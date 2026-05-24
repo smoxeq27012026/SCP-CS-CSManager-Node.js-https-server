@@ -98,22 +98,31 @@ router.post("/key", async (req, res) => {
 // Выход
 router.get("/logout", (req, res, next) => {
   const username = req.user?.username || "Unknown";
+  
+  // Сбрасываем флаг 2FA при выходе
+  req.session.totpVerified = false;
+  req.session.returnTo = null;
+  
   req.logout((err) => {
     if (err) return next(err);
-    req.session.totpVerified = false;
-    axios
-      .post(process.env.WEBHOOK_URL, {
-        embeds: [{
-          title: "🚪 Выход",
-          description: `**${username}** вышел из системы`,
-          color: 0xe74c3c,
-          timestamp: new Date().toISOString(),
-        }],
-      })
-      .catch(() => {});
-    res.redirect("/");
+    // Очищаем сессию полностью для безопасности
+    req.session.destroy((sessionErr) => {
+      if (sessionErr) console.error("Session destroy error:", sessionErr);
+      axios
+        .post(process.env.WEBHOOK_URL, {
+          embeds: [{
+            title: "🚪 Выход",
+            description: `**${username}** вышел из системы`,
+            color: 0xe74c3c,
+            timestamp: new Date().toISOString(),
+          }],
+        })
+        .catch(() => {});
+      res.redirect("/");
+    });
   });
 });
+
 
 // Google авторизация
 router.get("/google", (req, res, next) => {
