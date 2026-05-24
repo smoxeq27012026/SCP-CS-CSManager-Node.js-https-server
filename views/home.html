@@ -322,8 +322,8 @@
         .isometric-grid {
           position: absolute;
               /* Меняем позиционирование: не центрируем, а размещаем от левого верхнего угла с запасом */
-              top: -50%; /* Уходим вверх за пределы экрана */
-              left: -50%; /* Уходим влево за пределы экрана */
+              top: -35%; /* Уходим вверх за пределы экрана */
+              left: -70%; /* Уходим влево за пределы экрана */
               width: 200vw; /* Увеличиваем для лучшего покрытия */
               height: 200vh;
               transform: rotateX(60deg) rotateZ(-45deg);
@@ -422,7 +422,7 @@
         const gridContainer = document.createElement('div');
         gridContainer.className = 'isometric-grid';
         
-        const tileSize = 80;
+        const tileSize = 75;
         const w = window.innerWidth * 3;
         const h = window.innerHeight * 3;
         
