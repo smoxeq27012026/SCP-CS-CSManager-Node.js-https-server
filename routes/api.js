@@ -249,7 +249,8 @@ router.get("/retrieval/:uid", async (req, res) => {
 
 router.get("/retrieval/clear/:uid", isAuthenticated, canDeleteModerationEntries, async (req, res) => {
   try {
-    await supabase.from("retrievals").delete().eq("uid", req.params.uid);
+    const server = req.query.server || 'CLASSIC';
+    await supabase.from("retrievals").delete().eq("uid", req.params.uid).eq("server", server);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -258,9 +259,13 @@ router.get("/retrieval/clear/:uid", isAuthenticated, canDeleteModerationEntries,
 
 router.get("/retrieval", isAuthenticated, canViewModeration, async (req, res) => {
   try {
+    // Получаем сервер из query параметра
+    const server = req.query.server || 'CLASSIC';
+    
     const { data: retrievals } = await supabase
       .from("retrievals")
       .select("*")
+      .eq("server", server)
       .order("created_at", { ascending: false });
     res.json({ retrievals: retrievals || [] });
   } catch (err) {
@@ -271,15 +276,19 @@ router.get("/retrieval", isAuthenticated, canViewModeration, async (req, res) =>
 router.post("/retrieval", isAuthenticated, canInteractModeration, async (req, res) => {
   try {
     const { uid, reason, time } = req.body;
+    const server = req.query.server || 'CLASSIC';
+    
     if (!uid || !reason)
       return res.status(400).json({ error: "UID и причина обязательны" });
     if (!/^\d+$/.test(uid))
       return res.status(400).json({ error: "UID должен содержать только цифры" });
     
-    await supabase.from("retrievals").delete().eq("uid", uid);
+    // Удаляем старый розыск для этого UID на этом сервере
+    await supabase.from("retrievals").delete().eq("uid", uid).eq("server", server);
+    
     const { error } = await supabase
       .from("retrievals")
-      .insert({ uid, reason, time: time || 60 });
+      .insert({ uid, reason, time: time || 60, server });
     if (error) throw error;
     res.json({ success: true });
   } catch (err) {
