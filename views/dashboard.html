@@ -1258,14 +1258,6 @@
             >
               <i class="fas fa-shield-haltered"></i> Загрузка...
             </button>
-            <button
-              class="btn btn-secondary"
-              style="width: 100%; margin-top: 8px"
-              id="btnAccessKey"
-              onclick="manageAccessKey()"
-            >
-              <i class="fas fa-key"></i> Загрузка...
-            </button>
           </div>
         </div>
       </div>
@@ -1491,74 +1483,6 @@
     </div>
 
     <script>
-      function updateAccessKeyButton() {
-        fetch("/api/me/access-key")
-          .then((r) => r.json())
-          .then((data) => {
-            const btn = document.getElementById("btnAccessKey");
-            if (data.hasKey) {
-              btn.innerHTML =
-                '<i class="fas fa-key"></i> Перегенерировать ключ доступа';
-              btn.onclick = regenerateKey;
-            } else {
-              btn.innerHTML =
-                '<i class="fas fa-key"></i> Сгенерировать ключ доступа';
-              btn.onclick = generateKey;
-            }
-          });
-      }
-
-      async function generateKey() {
-        const code = await showInputModal(
-          "Генерация ключа",
-          "Введите код 2FA для генерации ключа:",
-          "000000"
-        );
-        if (!code) return;
-        fetch("/api/me/access-key/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
-        })
-          .then((r) => r.json())
-          .then(async (d) => {
-            if (d.success) {
-              // Копируем в буфер обмена
-              try {
-                await navigator.clipboard.writeText(d.key);
-                showToast(
-                  "Ключ создан и скопирован!",
-                  "Ключ сохранён в буфер обмена. Храните его в надёжном месте.",
-                  "success"
-                );
-              } catch (err) {
-                // Если буфер не поддерживается — показываем ключ в модалке
-                showToast(
-                  "Ключ создан",
-                  "Браузер не поддерживает авто-копирование.",
-                  "warning"
-                );
-              }
-              updateAccessKeyButton();
-            } else {
-              showToast("Ошибка", d.error || "", "error");
-            }
-          });
-      }
-
-      async function regenerateKey() {
-        const confirmed = await showConfirmModal(
-          "Перегенерация ключа",
-          "Старый ключ будет удалён. Продолжить?",
-          "Перегенерировать"
-        );
-        if (!confirmed) return;
-        generateKey();
-      }
-
-      // Вызови при загрузке
-      updateAccessKeyButton();
-
       let currentUser = null;
       let userPermissions = {};
       let currentServer = localStorage.getItem('selectedServer') || 'CLASSIC';
