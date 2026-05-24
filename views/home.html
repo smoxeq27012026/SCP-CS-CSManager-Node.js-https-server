@@ -78,6 +78,121 @@
         100% { transform: translate(40px, 40px); }
       }
 
+      /* ========== 3D КУБЫ (ДОБАВЛЕНЫ) ========== */
+      .cubes-background {
+        position: fixed;
+        bottom: -100px;
+        right: -50px;
+        z-index: 1;
+        opacity: 0.35;
+        pointer-events: none;
+        transform: skewY(-20deg) scale(0.7);
+        transform-origin: bottom right;
+        animation: cubesHueRotate 8s linear infinite;
+      }
+
+      @keyframes cubesHueRotate {
+        0% { filter: hue-rotate(0deg); }
+        100% { filter: hue-rotate(360deg); }
+      }
+
+      .cube-group {
+        display: flex;
+        gap: 20px;
+        position: relative;
+      }
+
+      .cube {
+        position: relative;
+        display: flex;
+        gap: 20px;
+      }
+
+      .cube:nth-child(2) {
+        translate: -40px -40px;
+        z-index: 1;
+      }
+      .cube:nth-child(3) {
+        translate: 40px 40px;
+        z-index: 3;
+      }
+
+      .cube-face {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .cube-square {
+        position: relative;
+        display: inline-block;
+        width: 45px;
+        height: 45px;
+        background: rgba(100, 110, 130, 0.5);
+        backdrop-filter: blur(2px);
+        transition: 0.4s ease;
+        cursor: pointer;
+      }
+
+      .cube-square::before {
+        content: "";
+        position: absolute;
+        left: -36px;
+        width: 36px;
+        height: 100%;
+        background: rgba(80, 90, 110, 0.4);
+        transform-origin: right;
+        transform: skewY(45deg);
+        transition: 0.4s ease;
+      }
+
+      .cube-square::after {
+        content: "";
+        position: absolute;
+        top: -36px;
+        left: 0;
+        width: 100%;
+        height: 36px;
+        background: rgba(90, 100, 120, 0.4);
+        transform-origin: bottom;
+        transform: skewX(45deg);
+        transition: 0.4s ease;
+      }
+
+      .cube-square:hover {
+        background: #ef4149;
+        filter: drop-shadow(0 0 15px #ef4149);
+        transition: 0s;
+      }
+
+      .cube-square:hover::before,
+      .cube-square:hover::after {
+        background: #ef4149;
+        transition: 0s;
+      }
+
+      @media (max-width: 768px) {
+        .cubes-background {
+          transform: skewY(-20deg) scale(0.4);
+          bottom: -150px;
+          right: -100px;
+          opacity: 0.2;
+        }
+        .cube-square {
+          width: 35px;
+          height: 35px;
+        }
+        .cube-square::before {
+          left: -28px;
+          width: 28px;
+        }
+        .cube-square::after {
+          top: -28px;
+          height: 28px;
+        }
+      }
+
       /* Контейнер с z-index поверх сетки */
       .welcome-container {
         display: flex;
@@ -85,7 +200,7 @@
         max-width: 1000px;
         width: 100%;
         position: relative;
-        z-index: 2;
+        z-index: 10;
         backdrop-filter: blur(2px);
       }
 
@@ -368,6 +483,116 @@
     </style>
   </head>
   <body>
+    <!-- 3D КУБЫ НА ФОНЕ -->
+    <div class="cubes-background">
+      <div class="cube-group">
+        <div class="cube">
+          <div class="cube-face" style="--x: -1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 0; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+        </div>
+        <div class="cube">
+          <div class="cube-face" style="--x: -1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 0; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+        </div>
+        <div class="cube">
+          <div class="cube-face" style="--x: -1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 0; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="cube-group" style="margin-top: 30px;">
+        <div class="cube">
+          <div class="cube-face" style="--x: -1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 0; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+        </div>
+        <div class="cube">
+          <div class="cube-face" style="--x: -1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 0; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+        </div>
+        <div class="cube">
+          <div class="cube-face" style="--x: -1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 0; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+          <div class="cube-face" style="--x: 1; --y: 0;">
+            <div class="cube-square" style="--i: 3;"></div>
+            <div class="cube-square" style="--i: 2;"></div>
+            <div class="cube-square" style="--i: 1;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="welcome-container">
       <!-- Левая панель: Приветствие и вход -->
       <div class="welcome-card left">
