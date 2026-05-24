@@ -31,8 +31,8 @@
         --accent-hover: #45b07e;
         --glass-bg: rgba(255, 255, 255, 0.02);
         --shadow-glow: 0 0 20px rgba(59, 157, 111, 0.2);
-        --warning: #fb923c;
         --danger: #ef4444;
+        --warning: #fb923c;
         --transition-default: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
       }
 
@@ -73,13 +73,13 @@
         100% { transform: translate(40px, 40px); }
       }
 
-      /* Контейнер */
+      /* Контейнер с z-index поверх сетки */
       .error-container {
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
-        max-width: 600px;
+        max-width: 550px;
         margin: 0 auto;
         position: relative;
         z-index: 2;
@@ -91,7 +91,7 @@
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--border-color);
-        border-radius: 32px;
+        border-radius: 28px;
         padding: 56px 48px;
         width: 100%;
         text-align: center;
@@ -102,15 +102,15 @@
 
       .error-card:hover {
         border-color: rgba(255, 255, 255, 0.1);
-        transform: translateY(-5px);
-        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.4);
+        transform: translateY(-4px);
+        box-shadow: 0 28px 56px rgba(0, 0, 0, 0.4);
       }
 
       @keyframes fadeInBlur {
         from {
           opacity: 0;
-          transform: translateY(25px);
-          filter: blur(10px);
+          transform: translateY(20px);
+          filter: blur(8px);
         }
         to {
           opacity: 1;
@@ -121,7 +121,7 @@
 
       /* Логотип */
       .logo {
-        margin-bottom: 28px;
+        margin-bottom: 32px;
       }
 
       .logo h2 {
@@ -142,12 +142,12 @@
         font-weight: 500;
       }
 
-      /* Иконка ошибки с анимацией */
+      /* Иконка ошибки */
       .error-icon {
         width: 100px;
         height: 100px;
-        background: rgba(251, 146, 60, 0.08);
-        border: 1px solid rgba(251, 146, 60, 0.2);
+        background: rgba(251, 146, 60, 0.1);
+        border: 1px solid rgba(251, 146, 60, 0.25);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -157,25 +157,29 @@
         animation: pulseGlow 2s ease-in-out infinite;
       }
 
+      @keyframes pulseGlow {
+        0% {
+          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.2);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow: 0 0 0 15px rgba(251, 146, 60, 0);
+          transform: scale(1.05);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
+          transform: scale(1);
+        }
+      }
+
       .error-icon i {
         font-size: 48px;
         color: var(--warning);
-        filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.3));
-      }
-
-      @keyframes pulseGlow {
-        0%, 100% {
-          transform: scale(1);
-          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.2);
-        }
-        50% {
-          transform: scale(1.05);
-          box-shadow: 0 0 0 15px rgba(251, 146, 60, 0);
-        }
       }
 
       .error-card:hover .error-icon {
         transform: scale(1.08);
+        box-shadow: 0 0 30px rgba(251, 146, 60, 0.3);
       }
 
       /* Код ошибки */
@@ -185,12 +189,13 @@
         background: linear-gradient(135deg, #fb923c 0%, #ef4444 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        letter-spacing: 4px;
+        letter-spacing: -4px;
         margin-bottom: 16px;
         line-height: 1;
+        text-shadow: 0 2px 10px rgba(251, 146, 60, 0.2);
       }
 
-      /* Заголовок */
+      /* Заголовки */
       .error-card h2 {
         font-size: 26px;
         font-weight: 700;
@@ -199,15 +204,11 @@
         letter-spacing: -0.3px;
       }
 
-      /* Описание */
-      .error-message {
+      .error-card .message {
         color: var(--text-secondary);
-        font-size: 15px;
-        line-height: 1.6;
+        font-size: 14px;
         margin-bottom: 32px;
-        max-width: 380px;
-        margin-left: auto;
-        margin-right: auto;
+        line-height: 1.6;
       }
 
       /* Кнопка */
@@ -223,11 +224,13 @@
         cursor: pointer;
         transition: var(--transition-default);
         border: 1px solid transparent;
-        text-decoration: none;
         font-family: inherit;
         background: var(--accent-green);
         color: #fff;
         box-shadow: var(--shadow-glow);
+        text-decoration: none;
+        width: auto;
+        min-width: 180px;
       }
 
       .btn:hover {
@@ -237,7 +240,7 @@
       }
 
       .btn:active {
-        transform: scale(0.97);
+        transform: scale(0.98);
       }
 
       /* Дополнительная информация */
@@ -261,58 +264,75 @@
       }
 
       /* Адаптивность */
-      @media (max-width: 560px) {
+      @media (max-width: 640px) {
         .error-card {
-          padding: 40px 28px;
-          border-radius: 28px;
+          padding: 40px 32px;
+          border-radius: 24px;
         }
-
+        
         .error-code {
-          font-size: 64px;
+          font-size: 72px;
         }
-
+        
         .error-card h2 {
           font-size: 22px;
         }
-
+        
         .error-icon {
           width: 80px;
           height: 80px;
         }
-
+        
         .error-icon i {
           font-size: 38px;
         }
-
-        .error-message {
-          font-size: 14px;
-        }
-
+        
         .btn {
           padding: 12px 28px;
-          font-size: 13px;
+          min-width: 160px;
         }
       }
 
-      @media (max-width: 420px) {
+      @media (max-width: 480px) {
         body {
           padding: 16px;
         }
-
+        
         .error-card {
-          padding: 32px 20px;
+          padding: 32px 24px;
         }
-
+        
         .error-code {
-          font-size: 52px;
+          font-size: 56px;
+          letter-spacing: -2px;
         }
-
+        
         .error-card h2 {
           font-size: 20px;
         }
-
+        
+        .message {
+          font-size: 13px;
+        }
+        
+        .error-icon {
+          width: 70px;
+          height: 70px;
+          margin-bottom: 20px;
+        }
+        
+        .error-icon i {
+          font-size: 32px;
+        }
+        
         .logo h2 {
           font-size: 20px;
+        }
+        
+        .btn {
+          padding: 10px 24px;
+          font-size: 13px;
+          min-width: 140px;
         }
       }
 
@@ -351,6 +371,20 @@
         background: var(--accent-green);
         border-radius: 10px;
       }
+
+      /* Анимация для чисел 404 */
+      @keyframes numberGlow {
+        0%, 100% {
+          text-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
+        }
+        50% {
+          text-shadow: 0 0 40px rgba(251, 146, 60, 0.6);
+        }
+      }
+
+      .error-code {
+        animation: numberGlow 2s ease-in-out infinite;
+      }
     </style>
   </head>
   <body>
@@ -360,27 +394,25 @@
           <h2><i class="fas fa-angle-double-right"></i> DELTAxEX <i class="fas fa-angle-double-left"></i></h2>
           <p>CSManager Panel</p>
         </div>
-
+        
         <div class="error-icon">
           <i class="fas fa-exclamation-triangle"></i>
         </div>
-
+        
         <div class="error-code">404</div>
-        
         <h2>Страница не найдена</h2>
-        
-        <p class="error-message">
-          К сожалению, запрашиваемая страница не существует или была перемещена.
+        <p class="message">
+          Запрашиваемая страница не существует или была перемещена.<br>
+          Проверьте правильность URL или вернитесь на главную.
         </p>
         
         <a href="/" class="btn">
-          <i class="fas fa-arrow-left"></i> Вернуться на главную
+          <i class="fas fa-home"></i> На главную
         </a>
         
         <div class="help-text">
-          <i class="fas fa-life-ring"></i> Нужна помощь? 
-          <a href="/auth/login">Попробуйте войти</a> или 
-          <a href="/">перейти на главную</a>
+          <i class="fas fa-question-circle"></i> Нужна помощь? 
+          <a href="/">Свяжитесь с поддержкой</a>
         </div>
       </div>
     </div>
