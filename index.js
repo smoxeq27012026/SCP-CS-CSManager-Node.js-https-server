@@ -47,34 +47,5 @@ app.use((req, res) => {
   res.status(404).sendFile(require("path").join(__dirname, "views", "404.html"));
 });
 
-async function require2FA(req, res, next) {
-  if (!req.session || !req.session.userId) {
-    return res.redirect('/auth/login');
-  }
-  
-  // Проверяем, требуется ли 2FA для этого пользователя
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('two_factor_enabled, two_factor_verified')
-    .eq('id', req.session.userId)
-    .single();
-  
-  if (user && user.two_factor_enabled && !user.two_factor_verified) {
-    // Сохраняем URL куда пользователь хотел попасть
-    req.session.returnTo = req.originalUrl;
-    return res.redirect('/auth/2fa');
-  }
-  
-  next();
-}
-
-app.get('/dashboard', require2FA, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
-
-app.get('/api/*', require2FA, async (req, res) => {
-  
-});
-
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`🚀 2Сервер запущен на порту ${PORT}`));
