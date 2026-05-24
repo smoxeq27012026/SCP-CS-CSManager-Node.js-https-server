@@ -78,121 +78,6 @@
         100% { transform: translate(40px, 40px); }
       }
 
-      /* ========== 3D КУБЫ (ДОБАВЛЕНЫ) ========== */
-      .cubes-background {
-        position: fixed;
-        bottom: -100px;
-        right: -50px;
-        z-index: 1;
-        opacity: 0.35;
-        pointer-events: none;
-        transform: skewY(-20deg) scale(0.7);
-        transform-origin: bottom right;
-        animation: cubesHueRotate 8s linear infinite;
-      }
-
-      @keyframes cubesHueRotate {
-        0% { filter: hue-rotate(0deg); }
-        100% { filter: hue-rotate(360deg); }
-      }
-
-      .cube-group {
-        display: flex;
-        gap: 20px;
-        position: relative;
-      }
-
-      .cube {
-        position: relative;
-        display: flex;
-        gap: 20px;
-      }
-
-      .cube:nth-child(2) {
-        translate: -40px -40px;
-        z-index: 1;
-      }
-      .cube:nth-child(3) {
-        translate: 40px 40px;
-        z-index: 3;
-      }
-
-      .cube-face {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .cube-square {
-        position: relative;
-        display: inline-block;
-        width: 45px;
-        height: 45px;
-        background: rgba(100, 110, 130, 0.5);
-        backdrop-filter: blur(2px);
-        transition: 0.4s ease;
-        cursor: pointer;
-      }
-
-      .cube-square::before {
-        content: "";
-        position: absolute;
-        left: -36px;
-        width: 36px;
-        height: 100%;
-        background: rgba(80, 90, 110, 0.4);
-        transform-origin: right;
-        transform: skewY(45deg);
-        transition: 0.4s ease;
-      }
-
-      .cube-square::after {
-        content: "";
-        position: absolute;
-        top: -36px;
-        left: 0;
-        width: 100%;
-        height: 36px;
-        background: rgba(90, 100, 120, 0.4);
-        transform-origin: bottom;
-        transform: skewX(45deg);
-        transition: 0.4s ease;
-      }
-
-      .cube-square:hover {
-        background: #ef4149;
-        filter: drop-shadow(0 0 15px #ef4149);
-        transition: 0s;
-      }
-
-      .cube-square:hover::before,
-      .cube-square:hover::after {
-        background: #ef4149;
-        transition: 0s;
-      }
-
-      @media (max-width: 768px) {
-        .cubes-background {
-          transform: skewY(-20deg) scale(0.4);
-          bottom: -150px;
-          right: -100px;
-          opacity: 0.2;
-        }
-        .cube-square {
-          width: 35px;
-          height: 35px;
-        }
-        .cube-square::before {
-          left: -28px;
-          width: 28px;
-        }
-        .cube-square::after {
-          top: -28px;
-          height: 28px;
-        }
-      }
-
       /* Контейнер с z-index поверх сетки */
       .welcome-container {
         display: flex;
@@ -480,121 +365,75 @@
         background: var(--accent-green);
         border-radius: 10px;
       }
+
+      /* =========================================
+         ИЗОМЕТРИЧЕСКИЙ 3D ФОН (ТОЛЬКО ПК)
+         ========================================= */
+      
+      .isometric-bg {
+        display: none;
+      }
+
+      @media (min-width: 769px) {
+        .isometric-bg {
+          display: block;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 1;
+          /* Создаем перспективу и наклон */
+          perspective: 1500px;
+          transform-style: preserve-3d;
+          pointer-events: auto;
+          overflow: hidden;
+        }
+
+        .isometric-grid {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 200%;
+          height: 200%;
+          transform: translate(-50%, -50%) rotateX(55deg) rotateZ(-45deg) translateZ(-100px);
+          transform-origin: center center;
+          display: flex;
+          flex-wrap: wrap;
+          pointer-events: auto;
+        }
+
+        .isometric-tile {
+          width: 70px;
+          height: 70px;
+          background: rgba(40, 50, 65, 0.15);
+          border: 1px solid rgba(100, 120, 140, 0.12);
+          transition: all 0s;
+          pointer-events: auto;
+          cursor: pointer;
+          box-sizing: border-box;
+        }
+
+        /* Плавное затухание при наведении - очень долгое (4 секунды на возврат) */
+        .isometric-tile {
+          transition: background 0s, box-shadow 0s, border-color 0.1s ease;
+        }
+
+        .isometric-tile:hover {
+          transition: 0s;
+          background: var(--accent-green);
+          border-color: var(--accent-green);
+          box-shadow: 0 0 25px var(--accent-green), inset 0 0 12px rgba(255, 255, 255, 0.4);
+          z-index: 2;
+        }
+      }
     </style>
   </head>
   <body>
-    <!-- 3D КУБЫ НА ФОНЕ -->
-    <div class="cubes-background">
-      <div class="cube-group">
-        <div class="cube">
-          <div class="cube-face" style="--x: -1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 0; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-        </div>
-        <div class="cube">
-          <div class="cube-face" style="--x: -1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 0; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-        </div>
-        <div class="cube">
-          <div class="cube-face" style="--x: -1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 0; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-        </div>
-      </div>
-      <div class="cube-group" style="margin-top: 30px;">
-        <div class="cube">
-          <div class="cube-face" style="--x: -1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 0; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-        </div>
-        <div class="cube">
-          <div class="cube-face" style="--x: -1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 0; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-        </div>
-        <div class="cube">
-          <div class="cube-face" style="--x: -1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 0; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-          <div class="cube-face" style="--x: 1; --y: 0;">
-            <div class="cube-square" style="--i: 3;"></div>
-            <div class="cube-square" style="--i: 2;"></div>
-            <div class="cube-square" style="--i: 1;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- ИЗОМЕТРИЧЕСКИЙ ФОН -->
+    <div id="iso-bg" class="isometric-bg"></div>
 
     <div class="welcome-container">
-      <!-- Левая панель: Приветствие и вход -->
       <div class="welcome-card left">
         <h1>Добро пожаловать!</h1>
         <p>
@@ -612,7 +451,6 @@
         </a>
       </div>
 
-      <!-- Правая панель: Возможности / Фичи (как карточки в дашборде) -->
       <div class="welcome-card right">
         <h1>Возможности панели</h1>
         <p class="subtitle">
@@ -650,5 +488,85 @@
         </ul>
       </div>
     </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Генерация изометрической сетки только на ПК
+        if (window.innerWidth > 768) {
+          const bgContainer = document.getElementById('iso-bg');
+          
+          // Создаем контейнер для сетки
+          const gridContainer = document.createElement('div');
+          gridContainer.className = 'isometric-grid';
+          
+          // Рассчитываем количество плиток (делаем плотную сетку, чтобы покрыть весь экран с запасом)
+          // Увеличиваем количество, чтобы при повороте не было пустот
+          const tileSize = 70;
+          const cols = Math.ceil(window.innerWidth * 2.5 / tileSize);
+          const rows = Math.ceil(window.innerHeight * 2.5 / tileSize);
+          const totalTiles = cols * rows;
+
+          console.log(`Генерация изометрической сетки: ${cols}x${rows} = ${totalTiles} плиток`);
+
+          // Используем DocumentFragment для быстрой отрисовки
+          const fragment = document.createDocumentFragment();
+          
+          for (let i = 0; i < totalTiles; i++) {
+            const tile = document.createElement('div');
+            tile.className = 'isometric-tile';
+            
+            // Добавляем случайную небольшую задержку для анимации появления (опционально)
+            // tile.style.animationDelay = `${(i % 20) * 0.05}s`;
+            
+            fragment.appendChild(tile);
+          }
+          
+          gridContainer.appendChild(fragment);
+          bgContainer.appendChild(gridContainer);
+          
+          // Обработчик для плавного возврата цвета (убираем эффект, оставляем только наведение)
+          // Дополнительно: добавляем анимацию пульсации для фона
+          let hue = 0;
+          setInterval(() => {
+            hue = (hue + 0.5) % 360;
+            // Очень медленная смена оттенка для всей сетки
+            if (gridContainer) {
+              gridContainer.style.filter = `hue-rotate(${hue}deg)`;
+            }
+          }, 100);
+        }
+      });
+      
+      // Обработка изменения размера окна (для регенерации при ресайзе)
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          if (window.innerWidth > 768) {
+            const bgContainer = document.getElementById('iso-bg');
+            if (bgContainer) {
+              // Очищаем и регенерируем
+              bgContainer.innerHTML = '';
+              const gridContainer = document.createElement('div');
+              gridContainer.className = 'isometric-grid';
+              
+              const tileSize = 70;
+              const cols = Math.ceil(window.innerWidth * 2.5 / tileSize);
+              const rows = Math.ceil(window.innerHeight * 2.5 / tileSize);
+              const fragment = document.createDocumentFragment();
+              
+              for (let i = 0; i < cols * rows; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'isometric-tile';
+                fragment.appendChild(tile);
+              }
+              
+              gridContainer.appendChild(fragment);
+              bgContainer.appendChild(gridContainer);
+            }
+          }
+        }, 250);
+      });
+    </script>
   </body>
 </html>
