@@ -7,10 +7,7 @@
     <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="shortcut icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="apple-touch-icon" sizes="180x180" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       * {
         margin: 0;
@@ -49,12 +46,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow-x: hidden;
+        overflow: hidden; /* Скрываем любые вылеты за экран */
         padding: 20px;
         position: relative;
       }
 
-      /* Анимированная сетка, как в DASHBOARD */
+      /* Анимированная сетка точек (базовый фон) */
       body::before {
         content: "";
         position: fixed;
@@ -62,11 +59,7 @@
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(
-          circle,
-          rgba(59, 157, 111, 0.02) 1px,
-          transparent 1px
-        );
+        background: radial-gradient(circle, rgba(59, 157, 111, 0.02) 1px, transparent 1px);
         background-size: 40px 40px;
         animation: gridMove 40s linear infinite;
         pointer-events: none;
@@ -78,18 +71,17 @@
         100% { transform: translate(40px, 40px); }
       }
 
-      /* Контейнер с z-index поверх сетки */
+      /* Главный контейнер авторизации */
       .welcome-container {
         display: flex;
         gap: 24px;
         max-width: 1000px;
         width: 100%;
         position: relative;
-        z-index: 10;
+        z-index: 10; /* Поверх всех фонов */
         backdrop-filter: blur(2px);
       }
 
-      /* Стили карточек — такие же стеклянные, как в панели */
       .welcome-card {
         background: var(--bg-card);
         backdrop-filter: blur(20px);
@@ -106,14 +98,8 @@
         animation: fadeInBlur 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
       }
 
-      .welcome-card.left {
-        animation-delay: 0s;
-      }
-
-      .welcome-card.right {
-        animation-delay: 0.15s;
-        text-align: left;
-      }
+      .welcome-card.left { animation-delay: 0s; }
+      .welcome-card.right { animation-delay: 0.15s; text-align: left; }
 
       .welcome-card:hover {
         border-color: rgba(255, 255, 255, 0.1);
@@ -122,19 +108,10 @@
       }
 
       @keyframes fadeInBlur {
-        from {
-          opacity: 0;
-          transform: translateY(15px);
-          filter: blur(5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-          filter: blur(0);
-        }
+        from { opacity: 0; transform: translateY(15px); filter: blur(5px); }
+        to { opacity: 1; transform: translateY(0); filter: blur(0); }
       }
 
-      /* Логотип, как в сайдбаре */
       .logo-gradient {
         font-size: 24px;
         font-weight: 700;
@@ -172,7 +149,6 @@
         color: var(--accent-green);
       }
 
-      /* Кнопки в едином стиле с панелью */
       .btn {
         padding: 14px 28px;
         border-radius: 14px;
@@ -192,9 +168,7 @@
         width: 100%;
       }
 
-      .btn:active {
-        transform: scale(0.98);
-      }
+      .btn:active { transform: scale(0.98); }
 
       .btn-primary {
         background: var(--accent-green);
@@ -220,19 +194,6 @@
         box-shadow: 0 8px 28px rgba(66, 133, 244, 0.35);
       }
 
-      .btn-outline {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid var(--border-color);
-        color: var(--text-primary);
-      }
-
-      .btn-outline:hover {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 255, 255, 0.15);
-        transform: translateY(-2px);
-      }
-
-      /* Список возможностей — как карточки пользователей */
       .feature-list {
         list-style: none;
         display: flex;
@@ -268,9 +229,7 @@
         transition: transform 0.2s ease;
       }
 
-      .feature-item:hover i {
-        transform: scale(1.1);
-      }
+      .feature-item:hover i { transform: scale(1.1); }
 
       .feature-item div h4 {
         font-size: 15px;
@@ -286,7 +245,6 @@
         line-height: 1.4;
       }
 
-      /* Ссылка "ключ доступа" в стиле навигации */
       .key-link {
         display: flex;
         align-items: center;
@@ -310,32 +268,6 @@
         transform: translateY(-2px);
       }
 
-      /* Адаптивность как в панели */
-      @media (max-width: 768px) {
-        .welcome-container {
-          flex-direction: column;
-          max-width: 480px;
-        }
-        .welcome-card {
-          padding: 32px 24px;
-        }
-        .welcome-card h1 {
-          font-size: 24px;
-        }
-        .logo-gradient {
-          font-size: 20px;
-        }
-        .feature-item {
-          padding: 14px;
-        }
-      }
-
-      /* Анимация ripple при клике (как в панели, для кнопок) */
-      .btn {
-        position: relative;
-        overflow: hidden;
-      }
-
       .btn::after {
         content: "";
         position: absolute;
@@ -354,24 +286,23 @@
         height: 300px;
       }
 
-      /* Кастомный скролл (опционально) */
-      ::-webkit-scrollbar {
-        width: 6px;
+      @media (max-width: 768px) {
+        body { overflow-y: auto; overflow-x: hidden; }
+        .welcome-container { flex-direction: column; max-width: 480px; margin: 40px 0; }
+        .welcome-card { padding: 32px 24px; }
+        .welcome-card h1 { font-size: 24px; }
+        .feature-item { padding: 14px; }
       }
-      ::-webkit-scrollbar-track {
-        background: var(--bg-dark);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: var(--accent-green);
-        border-radius: 10px;
-      }
+
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: var(--bg-dark); }
+      ::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 10px; }
 
       /* =========================================
          ИЗОМЕТРИЧЕСКИЙ 3D ФОН (ТОЛЬКО ПК)
          ========================================= */
-      
       .isometric-bg {
-        display: none;
+        display: none; /* Отключено для телефонов */
       }
 
       @media (min-width: 769px) {
@@ -380,57 +311,47 @@
           position: fixed;
           top: 0;
           left: 0;
-          width: 100%;
-          height: 100%;
-          z-index: 1;
-          /* Создаем перспективу и наклон */
+          width: 100vw;
+          height: 100vh;
+          z-index: 1; /* Строго под панелью */
           perspective: 1500px;
-          transform-style: preserve-3d;
-          pointer-events: auto;
           overflow: hidden;
+          pointer-events: auto;
         }
 
         .isometric-grid {
           position: absolute;
           top: 50%;
           left: 50%;
-          width: 200%;
-          height: 200%;
-          transform: translate(-50%, -50%) rotateX(55deg) rotateZ(-45deg) translateZ(-100px);
-          transform-origin: center center;
-          display: flex;
-          flex-wrap: wrap;
-          pointer-events: auto;
+          /* 300vw/300vh с центрированием гарантируют покрытие всего экрана без пустых углов */
+          width: 300vw;
+          height: 300vh;
+          transform: translate(-50%, -50%) rotateX(60deg) rotateZ(-45deg);
+          display: grid;
+          /* Автозаполнение сетки — не нужно считать столбцы в JS */
+          grid-template-columns: repeat(auto-fill, 75px);
+          grid-auto-rows: 75px;
+          align-content: start;
         }
 
         .isometric-tile {
-          width: 70px;
-          height: 70px;
-          background: rgba(40, 50, 65, 0.15);
-          border: 1px solid rgba(100, 120, 140, 0.12);
-          transition: all 0s;
-          pointer-events: auto;
-          cursor: pointer;
-          box-sizing: border-box;
-        }
-
-        /* Плавное затухание при наведении - очень долгое (4 секунды на возврат) */
-        .isometric-tile {
-          transition: background 0s, box-shadow 0s, border-color 0.1s ease;
+          width: 100%;
+          height: 100%;
+          background: rgba(255, 255, 255, 0.01);
+          border: 1px solid rgba(255, 255, 255, 0.03);
+          transition: background 1.5s ease-out, box-shadow 1.5s ease-out;
         }
 
         .isometric-tile:hover {
           transition: 0s;
           background: var(--accent-green);
-          border-color: var(--accent-green);
-          box-shadow: 0 0 25px var(--accent-green), inset 0 0 12px rgba(255, 255, 255, 0.4);
+          box-shadow: 0 0 30px var(--accent-green), inset 0 0 15px rgba(255, 255, 255, 0.3);
           z-index: 2;
         }
       }
     </style>
   </head>
   <body>
-    <!-- ИЗОМЕТРИЧЕСКИЙ ФОН -->
     <div id="iso-bg" class="isometric-bg"></div>
 
     <div class="welcome-container">
@@ -490,72 +411,45 @@
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        if (window.innerWidth > 768) {
-          const bgContainer = document.getElementById('iso-bg');
-          
-          const gridContainer = document.createElement('div');
-          gridContainer.className = 'isometric-grid';
-          
-          const tileSize = 70;
-          const cols = Math.ceil(window.innerWidth * 2.5 / tileSize);
-          const rows = Math.ceil(window.innerHeight * 2.5 / tileSize);
-          const totalTiles = cols * rows;
+      const initIsometricGrid = () => {
+        // Оптимизация: на телефонах (<= 768px) не генерируем плитки
+        if (window.innerWidth <= 768) return;
 
-          console.log(`Генерация изометрической сетки: ${cols}x${rows} = ${totalTiles} плиток`);
+        const bgContainer = document.getElementById('iso-bg');
+        if (!bgContainer) return;
+        
+        bgContainer.innerHTML = ''; // Очистка при ресайзе
 
-          // Используем DocumentFragment для быстрой отрисовки
-          const fragment = document.createDocumentFragment();
-          
-          for (let i = 0; i < totalTiles; i++) {
-            const tile = document.createElement('div');
-            tile.className = 'isometric-tile';
-            tile.style.animationDelay = `${(i % 20) * 0.05}s`;
-            
-            fragment.appendChild(tile);
-          }
-          
-          gridContainer.appendChild(fragment);
-          bgContainer.appendChild(gridContainer);
-          
-          let hue = 0;
-          setInterval(() => {
-            hue = (hue + 0.5) % 360;
-            if (gridContainer) {
-              gridContainer.style.filter = `hue-rotate(${hue}deg)`;
-            }
-          }, 100);
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'isometric-grid';
+        
+        const tileSize = 75;
+        // Покрываем 300% ширины и высоты экрана, чтобы не было видно углов
+        const w = window.innerWidth * 4;
+        const h = window.innerHeight * 4;
+        
+        const cols = Math.ceil(w / tileSize);
+        const rows = Math.ceil(h / tileSize);
+        const totalTiles = cols * rows;
+
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < totalTiles; i++) {
+          const tile = document.createElement('div');
+          tile.className = 'isometric-tile';
+          fragment.appendChild(tile);
         }
-      });
-      
+        
+        gridContainer.appendChild(fragment);
+        bgContainer.appendChild(gridContainer);
+      };
+
+      document.addEventListener('DOMContentLoaded', initIsometricGrid);
+
+      // Плавная перерисовка при изменении размера окна на ПК
       let resizeTimeout;
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          if (window.innerWidth > 768) {
-            const bgContainer = document.getElementById('iso-bg');
-            if (bgContainer) {
-              // Очищаем и регенерируем
-              bgContainer.innerHTML = '';
-              const gridContainer = document.createElement('div');
-              gridContainer.className = 'isometric-grid';
-              
-              const tileSize = 100;
-              const cols = Math.ceil(window.innerWidth * 2.5 / tileSize);
-              const rows = Math.ceil(window.innerHeight * 2.5 / tileSize);
-              const fragment = document.createDocumentFragment();
-              
-              for (let i = 0; i < cols * rows; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'isometric-tile';
-                fragment.appendChild(tile);
-              }
-              
-              gridContainer.appendChild(fragment);
-              bgContainer.appendChild(gridContainer);
-            }
-          }
-        }, 250);
+        resizeTimeout = setTimeout(initIsometricGrid, 250);
       });
     </script>
   </body>
