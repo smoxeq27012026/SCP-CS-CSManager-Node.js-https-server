@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="shortcut icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="apple-touch-icon" sizes="180x180" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    <title>DELTAxEX :: 404 — Страница не найдена</title>
+    <title>DELTAxEX :: Нет доступа</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -74,7 +74,7 @@
       }
 
       /* Контейнер с z-index поверх сетки */
-      .error-container {
+      .access-container {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -85,8 +85,8 @@
         z-index: 2;
       }
 
-      /* Карточка ошибки в стиле DASHBOARD */
-      .error-card {
+      /* Карточка доступа в стиле DASHBOARD */
+      .access-card {
         background: var(--bg-card);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
@@ -100,7 +100,7 @@
         animation: fadeInBlur 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
       }
 
-      .error-card:hover {
+      .access-card:hover {
         border-color: rgba(255, 255, 255, 0.1);
         transform: translateY(-4px);
         box-shadow: 0 28px 56px rgba(0, 0, 0, 0.4);
@@ -142,82 +142,137 @@
         font-weight: 500;
       }
 
-      /* Иконка ошибки */
-      .error-icon {
-        width: 100px;
-        height: 100px;
-        background: rgba(251, 146, 60, 0.1);
-        border: 1px solid rgba(251, 146, 60, 0.25);
+      /* Иконка замка с анимацией */
+      .lock-icon {
+        width: 110px;
+        height: 110px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.25);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 28px auto;
         transition: var(--transition-default);
-        animation: pulseGlow 2s ease-in-out infinite;
+        animation: lockPulse 2s ease-in-out infinite, lockFloat 3s ease-in-out infinite;
+        position: relative;
       }
 
-      @keyframes pulseGlow {
+      @keyframes lockPulse {
         0% {
-          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.2);
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2);
           transform: scale(1);
         }
         50% {
-          box-shadow: 0 0 0 15px rgba(251, 146, 60, 0);
+          box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
           transform: scale(1.05);
         }
         100% {
-          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
           transform: scale(1);
         }
       }
 
-      .error-icon i {
-        font-size: 48px;
-        color: var(--warning);
+      @keyframes lockFloat {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
       }
 
-      .error-card:hover .error-icon {
+      .lock-icon i {
+        font-size: 52px;
+        color: var(--danger);
+        animation: lockShake 0.5s ease-in-out infinite;
+        animation-play-state: paused;
+      }
+
+      .access-card:hover .lock-icon i {
+        animation-play-state: running;
+      }
+
+      @keyframes lockShake {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(5deg); }
+        75% { transform: rotate(-5deg); }
+      }
+
+      .access-card:hover .lock-icon {
         transform: scale(1.08);
-        box-shadow: 0 0 30px rgba(251, 146, 60, 0.3);
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+        border-color: rgba(239, 68, 68, 0.4);
       }
 
       /* Код ошибки */
       .error-code {
-        font-size: 88px;
+        font-size: 72px;
         font-weight: 800;
-        background: linear-gradient(135deg, #fb923c 0%, #ef4444 100%);
+        background: linear-gradient(135deg, #ef4444 0%, #fb923c 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        letter-spacing: -4px;
-        margin-bottom: 16px;
+        letter-spacing: -3px;
+        margin-bottom: 12px;
         line-height: 1;
-        text-shadow: 0 2px 10px rgba(251, 146, 60, 0.2);
+        text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
+        animation: codeGlow 2s ease-in-out infinite;
+      }
+
+      @keyframes codeGlow {
+        0%, 100% {
+          text-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+        50% {
+          text-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+        }
       }
 
       /* Заголовки */
-      .error-card h2 {
-        font-size: 26px;
+      .access-card h2 {
+        font-size: 28px;
         font-weight: 700;
         color: #fff;
         margin-bottom: 12px;
         letter-spacing: -0.3px;
       }
 
-      .error-card .message {
+      .access-card .message {
         color: var(--text-secondary);
         font-size: 14px;
-        margin-bottom: 32px;
+        margin-bottom: 20px;
         line-height: 1.6;
       }
 
-      /* Кнопка */
+      .access-card .hint {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 32px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border-left: 3px solid var(--danger);
+        text-align: left;
+      }
+
+      .access-card .hint i {
+        color: var(--danger);
+        margin-right: 8px;
+      }
+
+      /* Кнопки */
+      .button-group {
+        display: flex;
+        gap: 12px;
+        flex-direction: column;
+      }
+
       .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
-        padding: 14px 32px;
+        padding: 14px 28px;
         border-radius: 16px;
         font-size: 14px;
         font-weight: 600;
@@ -225,22 +280,36 @@
         transition: var(--transition-default);
         border: 1px solid transparent;
         font-family: inherit;
+        text-decoration: none;
+        width: 100%;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary {
         background: var(--accent-green);
         color: #fff;
         box-shadow: var(--shadow-glow);
-        text-decoration: none;
-        width: auto;
-        min-width: 180px;
       }
 
-      .btn:hover {
+      .btn-primary:hover {
         background: var(--accent-hover);
         transform: translateY(-2px);
         box-shadow: 0 8px 28px rgba(59, 157, 111, 0.35);
       }
 
-      .btn:active {
-        transform: scale(0.98);
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
       }
 
       /* Дополнительная информация */
@@ -265,31 +334,30 @@
 
       /* Адаптивность */
       @media (max-width: 640px) {
-        .error-card {
+        .access-card {
           padding: 40px 32px;
           border-radius: 24px;
         }
         
         .error-code {
-          font-size: 72px;
+          font-size: 56px;
         }
         
-        .error-card h2 {
-          font-size: 22px;
+        .access-card h2 {
+          font-size: 24px;
         }
         
-        .error-icon {
-          width: 80px;
-          height: 80px;
+        .lock-icon {
+          width: 90px;
+          height: 90px;
         }
         
-        .error-icon i {
-          font-size: 38px;
+        .lock-icon i {
+          font-size: 42px;
         }
         
         .btn {
-          padding: 12px 28px;
-          min-width: 160px;
+          padding: 12px 24px;
         }
       }
 
@@ -298,31 +366,31 @@
           padding: 16px;
         }
         
-        .error-card {
+        .access-card {
           padding: 32px 24px;
         }
         
         .error-code {
-          font-size: 56px;
+          font-size: 48px;
           letter-spacing: -2px;
         }
         
-        .error-card h2 {
+        .access-card h2 {
           font-size: 20px;
         }
         
-        .message {
+        .message, .hint {
           font-size: 13px;
         }
         
-        .error-icon {
-          width: 70px;
-          height: 70px;
+        .lock-icon {
+          width: 80px;
+          height: 80px;
           margin-bottom: 20px;
         }
         
-        .error-icon i {
-          font-size: 32px;
+        .lock-icon i {
+          font-size: 38px;
         }
         
         .logo h2 {
@@ -330,13 +398,12 @@
         }
         
         .btn {
-          padding: 10px 24px;
+          padding: 10px 20px;
           font-size: 13px;
-          min-width: 140px;
         }
       }
 
-      /* Анимация пульсации для кнопки */
+      /* Анимация пульсации для кнопок */
       .btn {
         position: relative;
         overflow: hidden;
@@ -371,43 +438,42 @@
         background: var(--accent-green);
         border-radius: 10px;
       }
-
-      /* Анимация для чисел 404 */
-      @keyframes numberGlow {
-        0%, 100% {
-          text-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
-        }
-        50% {
-          text-shadow: 0 0 40px rgba(251, 146, 60, 0.6);
-        }
-      }
-
-      .error-code {
-        animation: numberGlow 2s ease-in-out infinite;
-      }
     </style>
   </head>
   <body>
-    <div class="error-container">
-      <div class="error-card">
-        <div class="error-icon">
-          <i class="fas fa-exclamation-triangle"></i>
+    <div class="access-container">
+      <div class="access-card">
+        <div class="logo">
+          <h2><i class="fas fa-angle-double-right"></i> DELTAxEX <i class="fas fa-angle-double-left"></i></h2>
+          <p>CSManager Panel</p>
         </div>
         
-        <div class="error-code">404</div>
-        <h2>Страница не найдена</h2>
-        <p class="message">
-          Запрашиваемая страница не существует или была перемещена.<br>
-          Проверьте правильность URL или вернитесь на главную.
-        </p>
+        <div class="lock-icon">
+          <i class="fas fa-lock"></i>
+        </div>
         
-        <a href="/" class="btn">
-          <i class="fas fa-home"></i> На главную
-        </a>
+        <div class="error-code">403</div>
+        <h2>Доступ запрещён</h2>
+        <p class="message">
+          У вас недостаточно прав для просмотра этой страницы.
+        </p>
+        <div class="hint">
+          <i class="fas fa-info-circle"></i>
+          Для доступа необходимо авторизоваться через Discord или Google, а также иметь соответствующие права доступа на выбранном сервере.
+        </div>
+        
+        <div class="button-group">
+          <a href="/auth/login" class="btn btn-primary">
+            <i class="fas fa-sign-in-alt"></i> Войти в аккаунт
+          </a>
+          <a href="/" class="btn btn-secondary">
+            <i class="fas fa-home"></i> На главную
+          </a>
+        </div>
         
         <div class="help-text">
-          <i class="fas fa-question-circle"></i> Нужна помощь? 
-          <a href="/">Свяжитесь с поддержкой</a>
+          <i class="fas fa-question-circle"></i> Считаете, что это ошибка? 
+          <a href="/">Обратитесь в поддержку</a>
         </div>
       </div>
     </div>
