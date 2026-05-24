@@ -2,19 +2,16 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
     <link rel="shortcut icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    
-    <!-- для разных размеров -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
-    <title>DELTAxEX :: CSManager - Нет доступа</title>
+    <title>DELTAxEX :: Нет доступа</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
-      /* Вставь те же глобальные стили (root, body, анимации) */
       * {
         margin: 0;
         padding: 0;
@@ -22,78 +19,463 @@
       }
 
       :root {
-        --bg-dark: #0a0d10;
-        --bg-card: rgba(20, 24, 30, 0.6);
-        --bg-sidebar: rgba(15, 18, 23, 0.85);
-        --bg-input: rgba(30, 35, 42, 0.5);
-        --border-color: rgba(60, 70, 85, 0.3);
-        --text-primary: #e8eaed;
+        --bg-dark: #07090e;
+        --bg-card: rgba(13, 17, 24, 0.75);
+        --bg-sidebar: rgba(9, 11, 16, 0.85);
+        --bg-input: rgba(22, 28, 38, 0.6);
+        --border-color: rgba(255, 255, 255, 0.05);
+        --border-hover: rgba(59, 157, 111, 0.4);
+        --text-primary: #f3f4f6;
         --text-secondary: #9ca3af;
         --accent-green: #3b9d6f;
-        --accent-hover: #48b583;
-        --glass-bg: rgba(25, 30, 38, 0.4);
-        --shadow-glow: 0 4px 24px rgba(59, 157, 111, 0.15);
+        --accent-hover: #45b07e;
+        --glass-bg: rgba(255, 255, 255, 0.02);
+        --shadow-glow: 0 0 20px rgba(59, 157, 111, 0.2);
+        --danger: #ef4444;
+        --warning: #fb923c;
+        --transition-default: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
       }
 
       body {
-        font-family: "Inter", sans-serif;
-        background: linear-gradient(135deg, #0a0d10 0%, #151a22 100%);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top right, #121824 0%, var(--bg-dark) 100%);
         color: var(--text-primary);
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow: hidden;
+        overflow-x: hidden;
+        padding: 20px;
+        position: relative;
       }
+
+      /* Анимированная сетка как в DASHBOARD */
       body::before {
-        /* сетка */
+        content: "";
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(59, 157, 111, 0.02) 1px,
+          transparent 1px
+        );
+        background-size: 40px 40px;
+        animation: gridMove 40s linear infinite;
+        pointer-events: none;
+        z-index: 0;
       }
-      .error-card {
+
+      @keyframes gridMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(40px, 40px); }
+      }
+
+      /* Контейнер с z-index поверх сетки */
+      .access-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 550px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Карточка доступа в стиле DASHBOARD */
+      .access-card {
         background: var(--bg-card);
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 40px;
+        border-radius: 28px;
+        padding: 56px 48px;
+        width: 100%;
         text-align: center;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        animation: fadeInUp 0.6s ease;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+        transition: var(--transition-default);
+        animation: fadeInBlur 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
       }
-      .error-card i {
-        font-size: 48px;
-        color: var(--accent-green);
-        margin-bottom: 16px;
+
+      .access-card:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-4px);
+        box-shadow: 0 28px 56px rgba(0, 0, 0, 0.4);
       }
-      .error-card h2 {
+
+      @keyframes fadeInBlur {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+          filter: blur(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
+        }
+      }
+
+      /* Логотип */
+      .logo {
+        margin-bottom: 32px;
+      }
+
+      .logo h2 {
         font-size: 24px;
-        margin-bottom: 8px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #e4f9f0 0%, #3b9d6f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
       }
-      .error-card p {
+
+      .logo p {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
         color: var(--text-secondary);
-        margin-bottom: 24px;
+        font-weight: 500;
       }
+
+      /* Иконка замка с анимацией */
+      .lock-icon {
+        width: 110px;
+        height: 110px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.25);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 28px auto;
+        transition: var(--transition-default);
+        animation: lockPulse 2s ease-in-out infinite, lockFloat 3s ease-in-out infinite;
+        position: relative;
+      }
+
+      @keyframes lockPulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+          transform: scale(1.05);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+          transform: scale(1);
+        }
+      }
+
+      @keyframes lockFloat {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      .lock-icon i {
+        font-size: 52px;
+        color: var(--danger);
+        animation: lockShake 0.5s ease-in-out infinite;
+        animation-play-state: paused;
+      }
+
+      .access-card:hover .lock-icon i {
+        animation-play-state: running;
+      }
+
+      @keyframes lockShake {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(5deg); }
+        75% { transform: rotate(-5deg); }
+      }
+
+      .access-card:hover .lock-icon {
+        transform: scale(1.08);
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+
+      /* Код ошибки */
+      .error-code {
+        font-size: 72px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ef4444 0%, #fb923c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -3px;
+        margin-bottom: 12px;
+        line-height: 1;
+        text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
+        animation: codeGlow 2s ease-in-out infinite;
+      }
+
+      @keyframes codeGlow {
+        0%, 100% {
+          text-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+        50% {
+          text-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+        }
+      }
+
+      /* Заголовки */
+      .access-card h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 12px;
+        letter-spacing: -0.3px;
+      }
+
+      .access-card .message {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+
+      .access-card .hint {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 32px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border-left: 3px solid var(--danger);
+        text-align: left;
+      }
+
+      .access-card .hint i {
+        color: var(--danger);
+        margin-right: 8px;
+      }
+
+      /* Кнопки */
+      .button-group {
+        display: flex;
+        gap: 12px;
+        flex-direction: column;
+      }
+
       .btn {
-        /* стили как выше */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 28px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-default);
+        border: 1px solid transparent;
+        font-family: inherit;
+        text-decoration: none;
+        width: 100%;
       }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary {
+        background: var(--accent-green);
+        color: #fff;
+        box-shadow: var(--shadow-glow);
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(59, 157, 111, 0.35);
+      }
+
       .btn-secondary {
-        background: transparent;
+        background: rgba(255, 255, 255, 0.03);
         color: var(--text-primary);
         border: 1px solid var(--border-color);
       }
+
       .btn-secondary:hover {
-        background: var(--glass-bg);
-        border-color: var(--accent-green);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      /* Дополнительная информация */
+      .help-text {
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .help-text a {
+        color: var(--accent-green);
+        text-decoration: none;
+        transition: var(--transition-default);
+      }
+
+      .help-text a:hover {
+        color: var(--accent-hover);
+        text-decoration: underline;
+      }
+
+      /* Адаптивность */
+      @media (max-width: 640px) {
+        .access-card {
+          padding: 40px 32px;
+          border-radius: 24px;
+        }
+        
+        .error-code {
+          font-size: 56px;
+        }
+        
+        .access-card h2 {
+          font-size: 24px;
+        }
+        
+        .lock-icon {
+          width: 90px;
+          height: 90px;
+        }
+        
+        .lock-icon i {
+          font-size: 42px;
+        }
+        
+        .btn {
+          padding: 12px 24px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 16px;
+        }
+        
+        .access-card {
+          padding: 32px 24px;
+        }
+        
+        .error-code {
+          font-size: 48px;
+          letter-spacing: -2px;
+        }
+        
+        .access-card h2 {
+          font-size: 20px;
+        }
+        
+        .message, .hint {
+          font-size: 13px;
+        }
+        
+        .lock-icon {
+          width: 80px;
+          height: 80px;
+          margin-bottom: 20px;
+        }
+        
+        .lock-icon i {
+          font-size: 38px;
+        }
+        
+        .logo h2 {
+          font-size: 20px;
+        }
+        
+        .btn {
+          padding: 10px 20px;
+          font-size: 13px;
+        }
+      }
+
+      /* Анимация пульсации для кнопок */
+      .btn {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease-out, height 0.4s ease-out;
+      }
+
+      .btn:active::after {
+        width: 300px;
+        height: 300px;
+      }
+
+      /* Стили для скролла */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-dark);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--accent-green);
+        border-radius: 10px;
       }
     </style>
   </head>
   <body>
-    <div class="error-card">
-      <i class="fas fa-lock"></i>
-      <h2>У вас нет прав</h2>
-      <p>
-        Для доступа к этой странице необходимо авторизоваться через Discord или
-        иметь соответствующие права.
-      </p>
-      <a href="/auth/login" class="btn btn-secondary">Войти</a>
+    <div class="access-container">
+      <div class="access-card">
+        <div class="logo">
+          <h2><i class="fas fa-angle-double-right"></i> DELTAxEX <i class="fas fa-angle-double-left"></i></h2>
+          <p>CSManager Panel</p>
+        </div>
+        
+        <div class="lock-icon">
+          <i class="fas fa-lock"></i>
+        </div>
+        
+        <div class="error-code">403</div>
+        <h2>Доступ запрещён</h2>
+        <p class="message">
+          У вас недостаточно прав для просмотра этой страницы.
+        </p>
+        <div class="hint">
+          <i class="fas fa-info-circle"></i>
+          Для доступа необходимо авторизоваться через Discord или Google, а также иметь соответствующие права доступа на выбранном сервере.
+        </div>
+        
+        <div class="button-group">
+          <a href="/auth/login" class="btn btn-primary">
+            <i class="fas fa-sign-in-alt"></i> Войти в аккаунт
+          </a>
+          <a href="/" class="btn btn-secondary">
+            <i class="fas fa-home"></i> На главную
+          </a>
+        </div>
+        
+        <div class="help-text">
+          <i class="fas fa-question-circle"></i> Считаете, что это ошибка? 
+          <a href="/">Обратитесь в поддержку</a>
+        </div>
+      </div>
     </div>
   </body>
 </html>
