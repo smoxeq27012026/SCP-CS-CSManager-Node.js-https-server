@@ -841,6 +841,180 @@
         border-color: rgba(255,255,255,0.15);
       }
 
+      /* ====== КАСТОМНЫЙ DROPDOWN ====== */
+      .custom-dropdown {
+        position: relative;
+        width: 100%;
+        user-select: none;
+      }
+      
+      .dropdown-trigger {
+        width: 100%;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 14px 16px;
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        backdrop-filter: blur(10px);
+      }
+      
+      .dropdown-trigger:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(22, 28, 38, 0.7);
+      }
+      
+      .dropdown-trigger.active {
+        border-color: var(--accent-green);
+        box-shadow: var(--shadow-glow);
+      }
+      
+      .dropdown-trigger .arrow {
+        transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      
+      .dropdown-trigger.active .arrow {
+        transform: rotate(180deg);
+      }
+      
+      .dropdown-trigger .arrow i {
+        color: var(--text-secondary);
+        font-size: 12px;
+      }
+      
+      .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 100%;
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+      }
+      
+      .dropdown-menu.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+      
+      .dropdown-option {
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      
+      .dropdown-option:first-child {
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
+      
+      .dropdown-option:last-child {
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+      }
+      
+      .dropdown-option:hover {
+        background: rgba(59, 157, 111, 0.1);
+        color: var(--text-primary);
+      }
+      
+      .dropdown-option.selected {
+        background: rgba(59, 157, 111, 0.15);
+        color: var(--accent-green);
+      }
+      
+      .dropdown-option.selected i {
+        color: var(--accent-green);
+      }
+      
+      .dropdown-option i {
+        width: 20px;
+        font-size: 14px;
+        transition: transform 0.2s ease;
+      }
+      
+      .dropdown-option:hover i {
+        transform: scale(1.1);
+      }
+      
+      /* Иконки для серверов */
+      .dropdown-option[data-server="CLASSIC"] i {
+        color: #3b9d6f;
+      }
+      
+      .dropdown-option[data-server="MEDIUMRP"] i {
+        color: #fb923c;
+      }
+      
+      /* Анимация появления опций */
+      .dropdown-option {
+        animation: slideIn 0.2s ease backwards;
+      }
+      
+      .dropdown-option:nth-child(1) { animation-delay: 0.05s; }
+      .dropdown-option:nth-child(2) { animation-delay: 0.1s; }
+      
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      /* Мобильная адаптация */
+      @media (max-width: 768px) {
+        .dropdown-menu {
+          position: fixed;
+          top: auto;
+          bottom: 20px;
+          left: 20px;
+          right: 20px;
+          width: auto;
+          max-width: none;
+          animation: mobileSlideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        @keyframes mobileSlideUp {
+          from {
+            opacity: 0;
+            transform: translateY(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .dropdown-menu.show {
+          transform: translateY(0);
+        }
+      }
+            
       @media (max-width: 992px) {
         .sidebar {
           transform: translateX(-100%);
@@ -891,6 +1065,7 @@
           display: none;
         }
       }
+      
     </style>
   </head>
   <body>
