@@ -321,17 +321,17 @@
 
         .isometric-grid {
           position: absolute;
-          top: 50%;
-          left: 50%;
-          /* 300vw/300vh с центрированием гарантируют покрытие всего экрана без пустых углов */
-          width: 300vw;
-          height: 300vh;
-          transform: translate(-50%, -50%) rotateX(60deg) rotateZ(-45deg);
-          display: grid;
-          /* Автозаполнение сетки — не нужно считать столбцы в JS */
-          grid-template-columns: repeat(auto-fill, 75px);
-          grid-auto-rows: 75px;
-          align-content: start;
+              /* Меняем позиционирование: не центрируем, а размещаем от левого верхнего угла с запасом */
+              top: -50%; /* Уходим вверх за пределы экрана */
+              left: -50%; /* Уходим влево за пределы экрана */
+              width: 200vw; /* Увеличиваем для лучшего покрытия */
+              height: 200vh;
+              transform: rotateX(60deg) rotateZ(-45deg);
+              transform-origin: 0 0; /* Важно: трансформация от левого верхнего угла */
+              display: grid;
+              grid-template-columns: repeat(auto-fill, 75px);
+              grid-auto-rows: 75px;
+              align-content: start;
         }
 
         .isometric-tile {
@@ -412,7 +412,6 @@
 
     <script>
       const initIsometricGrid = () => {
-        // Оптимизация: на телефонах (<= 768px) не генерируем плитки
         if (window.innerWidth <= 768) return;
 
         const bgContainer = document.getElementById('iso-bg');
@@ -423,10 +422,9 @@
         const gridContainer = document.createElement('div');
         gridContainer.className = 'isometric-grid';
         
-        const tileSize = 75;
-        // Покрываем 300% ширины и высоты экрана, чтобы не было видно углов
-        const w = window.innerWidth * 5;
-        const h = window.innerHeight * 5;
+        const tileSize = 80;
+        const w = window.innerWidth * 3;
+        const h = window.innerHeight * 3;
         
         const cols = Math.ceil(w / tileSize);
         const rows = Math.ceil(h / tileSize);
