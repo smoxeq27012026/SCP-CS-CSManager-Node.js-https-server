@@ -47,5 +47,4 @@ app.use((req, res) => {
   res.status(404).sendFile(require("path").join(__dirname, "views", "404.html"));
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 2Сервер запущен на порту ${PORT}`));
+module.exports = app;
