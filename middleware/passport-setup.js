@@ -10,11 +10,10 @@ passport.use(
     {
       clientID: process.env.DISCORD_CLIENT_ID,
       clientSecret: process.env.DISCORD_CLIENT_SECRET,
-      callbackURL: process.env.DISCORD_CALLBACK_URL,
+      callbackURL: "https://data-dlx.pro/auth/callback",
       scope: ["identify", "guilds", "guilds.members.read"],
     },
     (accessToken, refreshToken, profile, done) => {
-      // Здесь можно сохранять пользователя в БД, но пока просто передаём профиль
       return done(null, profile);
     }
   )
