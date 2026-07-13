@@ -5,7 +5,7 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "Ives van Hoorne",
@@ -16,20 +16,19 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
     "axios": "^1.16.1",
-    "body-parser": "^2.2.2",
+    "body-parser": "^1.20.2",
     "connect-pg-simple": "^9.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "express-session": "^1.19.0",
-    "mongoose": "^9.6.2",
-    "passport": "^0.7.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "passport": "^0.6.0",
     "passport-discord": "^0.1.4",
     "passport-google-oauth20": "^2.0.0",
-    "pg": "^8.11.0",
-    "qrcode": "^1.5.4",
+    "pg": "^8.11.3",
+    "qrcode": "^1.5.3",
     "speakeasy": "^2.0.0",
-    "ws": "^8.20.1"
+    "ws": "^8.14.2"
   }
 }
