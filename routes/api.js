@@ -151,6 +151,46 @@ router.get("/users", isAuthenticated, async (req, res) => {
       .range(from, to)
       .order("created_at", { ascending: false });
 
+    // ====== ФОНОВОЕ ОБНОВЛЕНИЕ АВАТАРОК ======
+    // Проверяем и обновляем аватарки у пользователей Discord
+    const now = Date.now();
+    const updatedUsers = [];
+    
+    for (const user of (users || [])) {
+      // Обновляем только если аватарка старая (больше 7 дней) или ссылка битая
+      const isDiscordUser = user.provider === 'discord' || (!user.provider && !user.discord_id?.startsWith('google_'));
+      const avatarIsOld = user.avatar_updated_at && (now - new Date(user.avatar_updated_at).getTime() > 7 * 24 * 60 * 60 * 1000);
+      const avatarIsDefault = user.avatar?.includes('embed/avatars') || user.avatar?.includes('ui-avatars.com');
+      
+      if (isDiscordUser && (avatarIsOld || avatarIsDefault || !user.avatar_updated_at)) {
+        // Обновляем аватарку
+        try {
+          const discordId = user.discord_id;
+          // Получаем свежие данные через Discord API
+          const response = await axios.get(`https://discord.com/api/v10/users/${discordId}`);
+          if (response.data && response.data.avatar) {
+            const newAvatar = `https://cdn.discordapp.com/avatars/${discordId}/${response.data.avatar}.png`;
+            await supabase
+              .from("players")
+              .update({ 
+                avatar: newAvatar,
+                avatar_updated_at: new Date().toISOString(),
+                username: response.data.username // Обновляем имя тоже
+              })
+              .eq("discord_id", discordId);
+            updatedUsers.push(user.discord_id);
+          }
+        } catch (avatarErr) {
+          // Если ошибка — пропускаем
+          console.log(`⚠️ Не удалось обновить аватар для ${user.discord_id}:`, avatarErr.message);
+        }
+      }
+    }
+    
+    if (updatedUsers.length > 0) {
+      console.log(`🔄 Обновлены аватарки для ${updatedUsers.length} пользователей`);
+    }
+
     res.json({
       users: (users || []).map((u) => ({
         discordId: u.discord_id,
@@ -164,6 +204,7 @@ router.get("/users", isAuthenticated, async (req, res) => {
       totalPages: Math.ceil((count || 0) / limitNum),
     });
   } catch (err) {
+    console.error("[API] /users error:", err);
     res.status(500).json({ error: err.message });
   }
 });
