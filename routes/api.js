@@ -49,6 +49,7 @@ router.get("/me", async (req, res) => {
           discord_id: req.user.id,
           username: req.user.username,
           avatar: avatar,
+          avatar_updated_at: new Date().toISOString(),
           provider: provider,
           created_at: new Date().toISOString(),
           roles: []
