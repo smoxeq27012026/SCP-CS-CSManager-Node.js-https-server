@@ -48,6 +48,7 @@ router.get(
           discord_id: discordId,
           username: username,
           avatar: avatarUrl,
+          avatar_updated_at: new Date().toISOString(),
           provider: "discord",
           created_at: new Date().toISOString(),
           roles: [],
@@ -68,17 +69,19 @@ router.get(
       player = newPlayer;
       console.log(`✅ Пользователь создан: ${player.discord_id}`);
     } else {
-      // 3. Если существует — ОБНОВЛЯЕМ аватарку и имя (на случай смены)
+      // 3. Если существует — ОБНОВЛЯЕМ аватарку и имя
       console.log(`♻️ Обновляем данные пользователя: ${username}`);
       
-      // Проверяем, нужно ли обновить аватарку (старая ссылка могла умереть)
       const needsAvatarUpdate = !player.avatar || 
-        player.avatar.includes('cdn.discordapp.com/avatars/') && 
-        !player.avatar.includes(`/avatars/${discordId}/${req.user.avatar}`);
+        (player.avatar.includes('cdn.discordapp.com/avatars/') && 
+        !player.avatar.includes(`/avatars/${discordId}/${req.user.avatar}`));
 
       const updateData = {};
       if (player.username !== username) updateData.username = username;
-      if (needsAvatarUpdate) updateData.avatar = avatarUrl;
+      if (needsAvatarUpdate) {
+        updateData.avatar = avatarUrl;
+        updateData.avatar_updated_at = new Date().toISOString();
+      }
 
       if (Object.keys(updateData).length > 0) {
         const { error: updateError } = await supabase
@@ -100,7 +103,6 @@ router.get(
       return res.redirect("/auth/2fa");
     }
 
-    // Успешный редирект на дашборд
     res.redirect(`/${discordId}/dashboard/users`);
   }
 );
