@@ -1776,28 +1776,6 @@
         if (e.target.id === "profilePopup") closeProfilePopup();
       });
 
-      const navItems = document.querySelectorAll(".nav-item");
-      const sections = {
-        "#users": document.getElementById("usersSection"),
-        "#moderation": document.getElementById("moderationSection"),
-        "#settings": document.getElementById("settingsSection"),
-      };
-      navItems.forEach((item) => {
-        item.addEventListener("click", (e) => {
-          e.preventDefault();
-          const target = item.getAttribute("href");
-          navItems.forEach((n) => n.classList.remove("active"));
-          item.classList.add("active");
-          Object.values(sections).forEach((s) => (s.style.display = "none"));
-          if (sections[target]) sections[target].style.display = "block";
-          document.getElementById("pageTitle").textContent =
-            item.querySelector("span").textContent;
-          if (window.innerWidth <= 768)
-            document.getElementById("sidebar").classList.remove("active");
-          if (target === "#moderation") loadRetrievals();
-        });
-      });
-
       function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("active");
       }
