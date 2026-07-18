@@ -2189,10 +2189,19 @@
           return showToast("Заполните все поля", "", "warning");
         if (!/^\d+$/.test(uid))
           return showToast("UID должен содержать только цифры", "", "error");
+        
+        // Получаем текущий сервер
+        const server = localStorage.getItem('selectedServer') || 'CLASSIC';
+        
         fetch("/api/retrieval", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uid, reason, time: parseInt(time) }),
+          body: JSON.stringify({ 
+            uid, 
+            reason, 
+            time: parseInt(time),
+            server: server  // <-- ДОБАВЛЯЕМ СЕРВЕР
+          }),
         })
           .then((r) => r.json())
           .then((d) => {
