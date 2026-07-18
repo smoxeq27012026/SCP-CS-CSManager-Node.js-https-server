@@ -1789,43 +1789,42 @@
         const options = document.querySelectorAll('.dropdown-option');
         const selectedText = document.getElementById('selectedServerText');
         
-        // Открытие/закрытие
         trigger.addEventListener('click', (e) => {
           e.stopPropagation();
           menu.classList.toggle('show');
           trigger.classList.toggle('active');
         });
         
-        // Выбор опции
         options.forEach(opt => {
           opt.addEventListener('click', () => {
             const server = opt.getAttribute('data-server');
             const serverName = opt.querySelector('span').textContent;
             
-            // Обновляем отображение
             selectedText.textContent = serverName;
             
-            // Обновляем выбранный класс
             options.forEach(o => o.classList.remove('selected'));
             opt.classList.add('selected');
             
-            // Сохраняем в localStorage
             currentServer = server;
             localStorage.setItem('selectedServer', server);
             
-            // Закрываем дропдаун
             menu.classList.remove('show');
             trigger.classList.remove('active');
             
-            // Обновляем данные пользователя
             if (refreshUserDataTimeout) clearTimeout(refreshUserDataTimeout);
             refreshUserDataTimeout = setTimeout(() => {
               refreshUserData();
             }, 200);
+            
+            const currentPath = window.location.pathname;
+            const section = currentSection || 'users';
+            const newUrl = `/${currentUser?.discordId}/dashboard/${section}?server=${server}`;
+            window.history.pushState({ page: section, server: server }, '', newUrl);
+            
+            showSection(section);
           });
         });
         
-        // Закрытие при клике вне
         document.addEventListener('click', (e) => {
           if (!e.target.closest('.custom-dropdown')) {
             menu.classList.remove('show');
@@ -1833,7 +1832,6 @@
           }
         });
         
-        // Восстанавливаем выбранное значение из localStorage
         const savedServer = localStorage.getItem('selectedServer');
         if (savedServer) {
           const selectedOption = document.querySelector(`.dropdown-option[data-server="${savedServer}"]`);
