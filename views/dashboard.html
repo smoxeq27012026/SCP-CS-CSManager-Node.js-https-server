@@ -2171,12 +2171,20 @@
         return div.innerHTML;
       }
 
-      function loadRetrievals() {
-        fetch("/api/retrieval")
+      function loadRetrievals(server) {
+        if (!server) {
+          server = localStorage.getItem('selectedServer') || 'CLASSIC';
+        }
+        
+        fetch(`/api/retrieval?server=${server}`)
           .then((r) => r.json())
           .then((data) => {
             const tbody = document.querySelector("#retrievalTable tbody");
             tbody.innerHTML = "";
+            if (!data.retrievals || data.retrievals.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">Нет активных розысков для сервера ' + server + '</td></tr>';
+              return;
+            }
             (data.retrievals || []).forEach((entry) => {
               const row = document.createElement("tr");
               row.style.cssText = "background:var(--bg-input);backdrop-filter:blur(10px);";
@@ -2194,9 +2202,6 @@
               `;
               tbody.appendChild(row);
             });
-            if (!data.retrievals || data.retrievals.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">Нет активных розысков</td></tr>';
-            }
           });
       }
 
