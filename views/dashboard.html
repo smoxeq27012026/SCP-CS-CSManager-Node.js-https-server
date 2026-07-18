@@ -2189,16 +2189,26 @@
           return showToast("Заполните все поля", "", "warning");
         if (!/^\d+$/.test(uid))
           return showToast("UID должен содержать только цифры", "", "error");
+        
+        // Получаем текущий сервер из URL или localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const server = urlParams.get('server') || localStorage.getItem('selectedServer') || 'CLASSIC';
+        
         fetch("/api/retrieval", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uid, reason, time: parseInt(time) }), // <-- НЕТ server!
+          body: JSON.stringify({ 
+            uid, 
+            reason, 
+            time: parseInt(time),
+            server: server // <-- ДОБАВЛЯЕМ server
+          }),
         })
           .then((r) => r.json())
           .then((d) => {
             if (d.success) {
               showToast("Добавлено!", "", "success");
-              loadRetrievals();
+              loadRetrievals(server);
             } else {
               showToast("Ошибка", d.error || "", "error");
             }
