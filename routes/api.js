@@ -284,73 +284,56 @@ router.get("/retrieval/:uid", async (req, res) => {
   }
 });
 
-router.post("/retrieval", isAuthenticated, canInteractModeration, async (req, res) => {
+// ===== GET /retrieval — ПОЛУЧЕНИЕ СПИСКА РОЗЫСКОВ =====
+router.get("/retrieval", isAuthenticated, canViewModeration, async (req, res) => {
   try {
-    const { uid, reason, time, server } = req.body; // <-- server из тела
-    // Если server не передан в теле, берём из query или заголовка
-    const finalServer = server || req.query.server || req.headers['x-server'] || 'CLASSIC';
-    
-    if (!uid || !reason)
-      return res.status(400).json({ error: "UID и причина обязательны" });
-    if (!/^\d+$/.test(uid))
-      return res.status(400).json({ error: "UID должен содержать только цифры" });
-
-    await supabase.from("retrievals").delete().eq("uid", uid).eq("server", finalServer);
-    
-    const { error } = await supabase
-      .from("retrievals")
-      .insert({ uid, reason, time: time || 60, server: finalServer });
-    if (error) throw error;
-    res.json({ success: true });
-  } catch (err) {
-    console.error("[API] POST /retrieval error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/retrieval", isAuthenticated, canInteractModeration, async (req, res) => {
-  try {
-    const { uid, reason, time, server } = req.body; // <-- server из тела
-    // Если server не передан в теле, берём из query или заголовка
-    const finalServer = server || req.query.server || req.headers['x-server'] || 'CLASSIC';
-    
-    if (!uid || !reason)
-      return res.status(400).json({ error: "UID и причина обязательны" });
-    if (!/^\d+$/.test(uid))
-      return res.status(400).json({ error: "UID должен содержать только цифры" });
-    
-    await supabase.from("retrievals").delete().eq("uid", uid).eq("server", finalServer);
-    
-    const { error } = await supabase
-      .from("retrievals")
-      .insert({ uid, reason, time: time || 60, server: finalServer });
-    if (error) throw error;
-    res.json({ success: true });
-  } catch (err) {
-    console.error("[API] POST /retrieval error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/retrieval", isAuthenticated, canInteractModeration, async (req, res) => {
-  try {
-    const { uid, reason, time } = req.body;
     const server = req.query.server || 'CLASSIC';
     
-    if (!uid || !reason)
-      return res.status(400).json({ error: "UID и причина обязательны" });
-    if (!/^\d+$/.test(uid))
-      return res.status(400).json({ error: "UID должен содержать только цифры" });
+    console.log(`[API] GET retrievals for server: ${server}`);
     
-    // Удаляем старый розыск для этого UID на этом сервере
-    await supabase.from("retrievals").delete().eq("uid", uid).eq("server", server);
+    const { data: retrievals, error } = await supabase
+      .from("retrievals")
+      .select("*")
+      .eq("server", server)
+      .order("created_at", { ascending: false });
+      
+    if (error) throw error;
+    
+    res.json({ retrievals: retrievals || [] });
+  } catch (err) {
+    console.error("[API] GET /retrieval error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== POST /retrieval — ДОБАВЛЕНИЕ В РОЗЫСК (ТОЛЬКО ОДИН!) =====
+router.post("/retrieval", isAuthenticated, canInteractModeration, async (req, res) => {
+  try {
+    const { uid, reason, time, server } = req.body;
+    const finalServer = server || req.query.server || req.headers['x-server'] || 'CLASSIC';
+    
+    if (!uid || !reason) {
+      return res.status(400).json({ error: "UID и причина обязательны" });
+    }
+    if (!/^\d+$/.test(uid)) {
+      return res.status(400).json({ error: "UID должен содержать только цифры" });
+    }
+    
+    await supabase.from("retrievals").delete().eq("uid", uid).eq("server", finalServer);
     
     const { error } = await supabase
       .from("retrievals")
-      .insert({ uid, reason, time: time || 60, server });
+      .insert({ 
+        uid, 
+        reason, 
+        time: time || 60, 
+        server: finalServer 
+      });
+      
     if (error) throw error;
     res.json({ success: true });
   } catch (err) {
+    console.error("[API] POST /retrieval error:", err);
     res.status(500).json({ error: err.message });
   }
 });
