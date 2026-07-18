@@ -1630,6 +1630,14 @@
 
       function showSection(section) {
         currentSection = section;
+        const currentUrl = window.location.pathname;
+        const basePath = `/${currentUser?.discordId}/dashboard`;
+        const newPath = `${basePath}/${section}`;
+        
+        if (currentUrl !== newPath) {
+          window.history.pushState({ page: section }, '', newPath);
+        }
+        
         document.getElementById("usersSection").style.display = "none";
         document.getElementById("moderationSection").style.display = "none";
         document.getElementById("settingsSection").style.display = "none";
@@ -1642,7 +1650,9 @@
           document.getElementById("moderationSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Модерация";
           
-          // Проверяем права для ТЕКУЩЕГО сервера
+          const urlParams = new URLSearchParams(window.location.search);
+          const serverParam = urlParams.get('server') || localStorage.getItem('selectedServer') || 'CLASSIC';
+
           const hasViewModeration = userPermissions.viewModeration;
           const hasInteractModeration = userPermissions.interactModeration;
           
@@ -1653,7 +1663,7 @@
           if (addBtn) addBtn.style.display = hasInteractModeration ? "flex" : "none";
           
           if (hasViewModeration) {
-            loadRetrievals();
+            loadRetrievals(serverParam);
           } else {
             const tbody = document.querySelector("#retrievalTable tbody");
             tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:var(--text-secondary);">У вас нет прав на просмотр модерации для выбранного сервера.</td></tr>';
@@ -1661,6 +1671,9 @@
         } else if (section === "settings") {
           document.getElementById("settingsSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Настройки";
+        } else if (section === "me") {
+          loadMyProfile();
+          document.getElementById("pageTitle").textContent = "Мой профиль";
         }
       }
       
