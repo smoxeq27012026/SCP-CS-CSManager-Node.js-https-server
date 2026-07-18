@@ -1848,6 +1848,32 @@
       });
 
 
+      document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.nav-item');
+        
+        navLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const page = this.dataset.page || this.getAttribute('href').split('/').pop();
+            
+            navLinks.forEach(n => n.classList.remove('active'));
+            this.classList.add('active');
+            
+            showSection(page);
+          
+            if (window.innerWidth <= 768) {
+              document.getElementById("sidebar").classList.remove("active");
+            }
+          });
+        });
+        
+        document.getElementById("profileCard").addEventListener("click", () => {
+          updateProfilePopup();
+          document.getElementById("profilePopup").classList.add("active");
+        });
+      });
+      
       function searchUsers(page = 1) {
         const discordId = document
           .getElementById("searchDiscordId")
