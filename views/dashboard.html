@@ -1861,15 +1861,7 @@
       }
 
       // Инициализация
-      document.addEventListener("DOMContentLoaded", () => {
-        setupServerDropdown();
-        refreshUserData();
-      });
-
-
-      // Обновлённый DOMContentLoaded - добавляем чтение URL при загрузке
       document.addEventListener('DOMContentLoaded', function() {
-        // ===== 1. Обработка навигационных ссылок =====
         const navLinks = document.querySelectorAll('.nav-item');
         
         navLinks.forEach(link => {
@@ -1889,30 +1881,24 @@
           });
         });
         
-        // ===== 2. Обработка клика по профилю =====
         document.getElementById("profileCard").addEventListener("click", () => {
           updateProfilePopup();
           document.getElementById("profilePopup").classList.add("active");
         });
         
-        // ===== 3. НОВОЕ: Загружаем страницу из URL при старте =====
         const page = getPageFromUrl();
         const server = getServerFromUrl();
         
-        // Устанавливаем сервер в localStorage и обновляем dropdown
         if (server) {
           localStorage.setItem('selectedServer', server);
           const selectedOption = document.querySelector(`.dropdown-option[data-server="${server}"]`);
           if (selectedOption) {
-            // Вызываем клик, чтобы обновить отображение в дропдауне
             selectedOption.click();
           }
         }
         
-        // Показываем нужную секцию
         showSection(page);
         
-        // Обновляем активный класс в меню
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
           const itemPage = item.dataset.page || item.getAttribute('href').split('/').pop();
