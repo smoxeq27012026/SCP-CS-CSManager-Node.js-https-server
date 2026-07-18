@@ -294,18 +294,26 @@ router.get("/retrieval/clear/:uid", isAuthenticated, canDeleteModerationEntries,
   }
 });
 
-router.get("/retrieval", isAuthenticated, canViewModeration, async (req, res) => {
+router.post("/retrieval", isAuthenticated, canInteractModeration, async (req, res) => {
   try {
-    // Получаем сервер из query параметра
-    const server = req.query.server || 'CLASSIC';
+    const { uid, reason, time, server } = req.body; // <-- server из тела
+    // Если server не передан в теле, берём из query или заголовка
+    const finalServer = server || req.query.server || req.headers['x-server'] || 'CLASSIC';
     
-    const { data: retrievals } = await supabase
+    if (!uid || !reason)
+      return res.status(400).json({ error: "UID и причина обязательны" });
+    if (!/^\d+$/.test(uid))
+      return res.status(400).json({ error: "UID должен содержать только цифры" });
+    
+    await supabase.from("retrievals").delete().eq("uid", uid).eq("server", finalServer);
+    
+    const { error } = await supabase
       .from("retrievals")
-      .select("*")
-      .eq("server", server)
-      .order("created_at", { ascending: false });
-    res.json({ retrievals: retrievals || [] });
+      .insert({ uid, reason, time: time || 60, server: finalServer });
+    if (error) throw error;
+    res.json({ success: true });
   } catch (err) {
+    console.error("[API] POST /retrieval error:", err);
     res.status(500).json({ error: err.message });
   }
 });
