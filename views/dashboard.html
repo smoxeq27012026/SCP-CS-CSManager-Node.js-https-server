@@ -1669,9 +1669,9 @@
           document.getElementById("moderationSection").style.display = "block";
           document.getElementById("pageTitle").textContent = "Модерация";
           
-          const urlParams = new URLSearchParams(window.location.search);
-          const serverParam = urlParams.get('server') || localStorage.getItem('selectedServer') || 'CLASSIC';
-
+          // ===== ИСПОЛЬЗУЕМ currentServer, А НЕ ПАРАМЕТР ИЗ URL =====
+          const serverParam = currentServer || localStorage.getItem('selectedServer') || 'CLASSIC';
+      
           const hasViewModeration = userPermissions.viewModeration;
           const hasInteractModeration = userPermissions.interactModeration;
           
@@ -1868,6 +1868,7 @@
         const server = getServerFromUrl();
         
         if (server) {
+          currentServer = server;
           localStorage.setItem('selectedServer', server);
           const selectedOption = document.querySelector(`.dropdown-option[data-server="${server}"]`);
           if (selectedOption) {
@@ -1875,7 +1876,12 @@
           }
         }
         
+        // ===== ПОТОМ ПОКАЗЫВАЕМ СЕКЦИЮ =====
         showSection(page);
+        
+        setupServerDropdown();
+        
+        refreshUserData();
         
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -1886,8 +1892,6 @@
             item.classList.remove('active');
           }
         });
-        setupServerDropdown();
-        refreshUserData();
       });
       
       function searchUsers(page = 1) {
