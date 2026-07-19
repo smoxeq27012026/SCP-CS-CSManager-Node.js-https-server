@@ -673,6 +673,28 @@ router.delete("/players/:discordId/roles/:roleId", isAuthenticated, canAccessAdm
   }
 });
 
+router.delete("/retrieval/clear/:uid", isAuthenticated, canDeleteModerationEntries, async (req, res) => {
+  try {
+    const uid = req.params.uid;
+    const server = req.headers['x-server'] || req.query.server || req.body?.server || 'CLASSIC';
+    
+    console.log(`[API] Clearing retrieval for UID ${uid} on server ${server}`);
+    
+    const { error } = await supabase
+      .from("retrievals")
+      .delete()
+      .eq("uid", uid)
+      .eq("server", server);
+      
+    if (error) throw error;
+    
+    res.json({ success: true });
+  } catch (err) {
+    console.error("[API] DELETE /retrieval/clear error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 let activePlayers = {};
 
 router.post("/game/players/join", (req, res) => {
