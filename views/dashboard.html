@@ -2460,11 +2460,29 @@
 
 
       function clearRetrieval(uid) {
-        fetch(`/api/retrieval/clear/${uid}`)
-          .then((r) => r.json())
-          .then((d) => {
-            if (d.success) loadRetrievals();
-          });
+        const urlParams = new URLSearchParams(window.location.search);
+        const server = urlParams.get('server') || localStorage.getItem('selectedServer') || 'CLASSIC';
+        
+        // Используем DELETE метод и передаём server в query
+        fetch(`/api/retrieval/clear/${uid}?server=${encodeURIComponent(server)}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success) {
+            showToast("Снято", "Розыск удалён", "success");
+            loadRetrievals(server);
+          } else {
+            showToast("Ошибка", d.error || "Не удалось снять розыск", "error");
+          }
+        })
+        .catch((err) => {
+          console.error("clearRetrieval error:", err);
+          showToast("Ошибка", "Не удалось снять розыск", "error");
+        });
       }
 
       function update2FAButton() {
