@@ -4,6 +4,7 @@ const session = require("express-session");
 const passport = require("passport");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const path = require("path"); // <-- ДОБАВИТЬ
 
 const authRoutes = require("./routes/auth");
 const apiRoutes = require("./routes/api");
@@ -14,6 +15,8 @@ const { csrfProtection, csrfToken } = require("./middleware/csrf");
 
 const app = express();
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 app.set("trust proxy", 1);
 
 app.use(cors({ origin: true, credentials: true }));
@@ -53,7 +56,7 @@ app.use("/api", apiRoutes);
 app.use("/", dashboardRoutes);
 
 app.use((req, res) => {
-  res.status(404).sendFile(require("path").join(__dirname, "views", "404.html"));
+  res.status(404).render("404", { csrfToken: req.session?.csrfToken || "" });
 });
 
 const PORT = process.env.PORT || 8080;
