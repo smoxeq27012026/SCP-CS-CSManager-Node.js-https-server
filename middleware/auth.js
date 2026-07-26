@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports.isAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) return next();
-  res.status(401).sendFile(path.join(__dirname, "..", "views", "unauthorized.html"));
+  res.status(401).render("unauthorized", { csrfToken: req.session?.csrfToken || "" });
 };
 
 module.exports.isOwner = (req, res, next) => {
@@ -10,22 +10,18 @@ module.exports.isOwner = (req, res, next) => {
   res.status(403).json({ error: "Forbidden" });
 };
 
-// Для проверки, что пользователь заходит на свой дашборд
 module.exports.isOwnDashboard = (req, res, next) => {
   if (req.isAuthenticated() && req.user.id === req.params.id) return next();
-  res.status(403).sendFile(path.join(__dirname, "..", "views", "unauthorized.html"));
+  res.status(403).render("unauthorized", { csrfToken: req.session?.csrfToken || "" });
 };
 
-// Проверка доступа к админке (owner или роль с accessAdmin)
 module.exports.canAccessAdmin = async (req, res, next) => {
   if (!req.isAuthenticated()) {
-    return res.status(401).sendFile(path.join(__dirname, "..", "views", "unauthorized.html"));
+    return res.status(401).render("unauthorized", { csrfToken: req.session?.csrfToken || "" });
   }
 
-  // Владелец всегда имеет доступ
   if (req.user.id === process.env.OWNER_ID) return next();
 
-  // Проверяем роли пользователя
   try {
     const supabase = require("../config/supabase");
     const { data: player } = await supabase
@@ -51,7 +47,7 @@ module.exports.canAccessAdmin = async (req, res, next) => {
     console.error("Admin check error:", err);
   }
 
-  res.status(403).sendFile(path.join(__dirname, "..", "views", "unauthorized.html"));
+  res.status(403).render("unauthorized", { csrfToken: req.session?.csrfToken || "" });
 };
 
 module.exports.canViewModeration = async (req, res, next) => {
