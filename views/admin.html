@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="csrf-token" content="{{ csrfToken }}">
   <title>DELTAxEX :: Админ-панель V6</title>
   <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
   <link rel="shortcut icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
@@ -697,6 +698,9 @@
 </div>
 
 <script>
+  function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+  }
   // Утилиты
   function escapeHtml(text) {
     if (!text) return '';
@@ -857,7 +861,10 @@
 
     const res = await fetch("/api/roles", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCsrfToken()
+      },
       body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot, rights, tag, server })
     });
     const d = await res.json();
@@ -913,7 +920,10 @@
 
     const res = await fetch(`/api/roles/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCsrfToken()
+      },
       body: JSON.stringify({ name, color, permissions, apAccess, reservedSlot, rights, tag, server })
     });
     const d = await res.json();
@@ -932,7 +942,12 @@
 
   async function deleteRole(roleId) {
     if (!confirm("Удалить роль? Это также удалит её у всех пользователей.")) return;
-    const res = await fetch(`/api/roles/${roleId}`, { method: "DELETE" });
+    const res = await fetch(`/api/roles/${roleId}`, { 
+      method: "DELETE",
+      headers: {
+        "X-CSRF-Token": getCsrfToken()
+      }
+    });
     const d = await res.json();
     if (d.success) { showToast("Роль удалена", "success"); loadRoles(); }
     else showToast("Ошибка: " + (d.error || ""), "error");
@@ -972,7 +987,12 @@
 
   async function removeRoleFromUser(discordId, roleId) {
     if (!confirm("Снять эту роль у пользователя?")) return;
-    const res = await fetch(`/api/players/${discordId}/roles/${roleId}`, { method: "DELETE" });
+    const res = await fetch(`/api/players/${discordId}/roles/${roleId}`, { 
+      method: "DELETE",
+      headers: {
+        "X-CSRF-Token": getCsrfToken()
+      }
+    });
     const d = await res.json();
     if (d.success) {
       showToast("Роль снята", "success");
@@ -991,7 +1011,10 @@
     if (!discordId || !roleId) return showToast("Заполните ID пользователя и выберите роль", "error");
     const res = await fetch("/api/players/assign-role", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCsrfToken()
+      },
       body: JSON.stringify({ discordId, roleId, uid: uid || null })
     });
     const d = await res.json();
