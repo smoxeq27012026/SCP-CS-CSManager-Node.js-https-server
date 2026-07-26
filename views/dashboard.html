@@ -1721,10 +1721,13 @@
         );
         if (!code) return;
         fetch("/api/me/access-key/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
-        })
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              "X-CSRF-Token": getCsrfToken()
+            },
+            body: JSON.stringify({ code }),
+          })
           .then((r) => r.json())
           .then(async (d) => {
             if (d.success) {
@@ -2248,7 +2251,10 @@
                 if (!newUid) return;
                 fetch("/api/me/uid", {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: { 
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken()
+                  },
                   body: JSON.stringify({ uid: newUid }),
                 })
                   .then((r) => r.json())
@@ -2278,7 +2284,10 @@
                 if (!newUid) return;
                 fetch("/api/me/uid", {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: { 
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken()
+                  },
                   body: JSON.stringify({ uid: newUid, discordId: playerData.discordId }),
                 })
                   .then((r) => r.json())
@@ -2403,7 +2412,10 @@
         
         fetch("/api/retrieval", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "X-CSRF-Token": getCsrfToken()
+          },
           body: JSON.stringify({ 
             uid, 
             reason, 
@@ -2471,7 +2483,8 @@
         fetch(`/api/retrieval/clear/${uid}?server=${encodeURIComponent(server)}`, {
           method: "DELETE",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-CSRF-Token": getCsrfToken()
           }
         })
         .then((r) => r.json())
@@ -2530,7 +2543,10 @@
         if (!code) return;
         fetch("/auth/2fa/disable", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "X-CSRF-Token": getCsrfToken()
+          },
           body: JSON.stringify({ code }),
         })
           .then((r) => r.json())
