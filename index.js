@@ -10,6 +10,7 @@ const apiRoutes = require("./routes/api");
 const dashboardRoutes = require("./routes/dashboard");
 const auth2faRoutes = require("./routes/auth2fa");
 const sessionStore = require("./config/session-store");
+const { csrfProtection, csrfToken } = require("./middleware/csrf");
 
 const app = express();
 
@@ -32,6 +33,14 @@ app.use(session({
     sameSite: "lax"
   }
 }));
+
+app.use(csrfToken);
+app.use("/api", (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH') {
+    return csrfProtection(req, res, next);
+  }
+  next();
+});
 
 app.use(passport.initialize());
 app.use(passport.session());
