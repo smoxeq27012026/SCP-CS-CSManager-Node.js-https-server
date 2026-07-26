@@ -133,7 +133,7 @@ router.get("/me", async (req, res) => {
   }
 });
 
-router.get("/users", isAuthenticated, async (req, res) => {
+router.get("/users", isAuthenticated, isOwner, async (req, res) => {
   try {
     const pageNum = parseInt(req.query.page) || 1;
     const limitNum = parseInt(req.query.limit) || 5;
