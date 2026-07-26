@@ -247,6 +247,17 @@ router.post("/me/uid", isAuthenticated, async (req, res) => {
         return res.status(403).json({ error: "Нет прав на изменение UID другого пользователя" });
       }
       
+      // ДОБАВЛЯЕМ: проверяем, существует ли целевой пользователь
+      const { data: targetPlayer, error: targetError } = await supabase
+        .from("players")
+        .select("discord_id")
+        .eq("discord_id", targetDiscordId)
+        .single();
+      
+      if (targetError || !targetPlayer) {
+        return res.status(404).json({ error: "Пользователь не найден" });
+      }
+      
       targetDiscordIdToUpdate = targetDiscordId;
     }
     
