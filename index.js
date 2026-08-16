@@ -1,13 +1,10 @@
 require("dotenv").config();
-
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
 const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const path = require("path");
+const path = require("path"); // <-- ДОБАВИТЬ
 
 const authRoutes = require("./routes/auth");
 const apiRoutes = require("./routes/api");
@@ -21,45 +18,8 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set("trust proxy", 1);
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://challenges.cloudflare.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "https:", "data:", "blob:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-      frameSrc: ["'self'", "https://challenges.cloudflare.com"],
-      frameAncestors: ["'self'"],
-      formAction: ["'self'", "https://discord.com", "https://accounts.google.com"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10, 
-  message: { error: "Слишком много попыток, попробуйте позже" },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const apiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 60,
-  message: { error: "Слишком много запросов" },
-});
-
-app.use("/auth", authLimiter);
-app.use("/api", apiLimiter);
-
-app.use(cors({ 
-  origin: process.env.ALLOWED_ORIGIN || "https://data-dlx.pro", 
-  credentials: true 
-}));
-
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
