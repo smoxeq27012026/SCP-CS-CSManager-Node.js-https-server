@@ -7,7 +7,7 @@ const session = require("express-session");
 const passport = require("passport");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const path = require("path"); // <-- ДОБАВИТЬ
+const path = require("path");
 
 const authRoutes = require("./routes/auth");
 const apiRoutes = require("./routes/api");
@@ -31,6 +31,8 @@ app.use(helmet({
       connectSrc: ["'self'"],
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
       frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+      frameAncestors: ["'self'"],
+      formAction: ["'self'", "https://discord.com", "https://accounts.google.com"],
     },
   },
   crossOriginEmbedderPolicy: false,
