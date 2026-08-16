@@ -2,6 +2,7 @@ const router = require("express").Router();
 const passport = require("passport");
 const axios = require("axios");
 const supabase = require("../config/supabase");
+const { verifyTurnstile, requireCaptcha } = require('../middleware/captcha');
 
 router.get("/login", passport.authenticate("discord"));
 
@@ -98,7 +99,19 @@ router.get(
       return res.redirect("/auth/2fa");
     }
 
-    res.redirect(`/${discordId}/dashboard/users`);
+    // === ВСТАВКА: проверка капчи ===
+    // Сохраняем пользователя в сессию для капчи
+    req.session.pendingUser = { id: discordId, username, avatar: avatarUrl };
+    req.session.returnTo = `/${discordId}/dashboard/users`;
+
+    // Если капча отключена в env — пропускаем
+    if (!process.env.TURNSTILE_SECRET_KEY || process.env.SKIP_CAPTCHA === 'true') {
+      req.session.captchaVerified = true;
+      return res.redirect(`/${discordId}/dashboard/users`);
+    }
+
+    // Иначе — на капчу
+    res.redirect("/auth/verify-captcha");
   }
 );
 
@@ -260,15 +273,25 @@ router.get("/google/callback", (req, res, next) => {
         return res.redirect("/auth/2fa");
       }
 
-      res.redirect(`/${googleId}/dashboard/users`);
+      // === ВСТАВКА: проверка капчи для Google ===
+      req.session.pendingUser = { id: googleId, username: user.username, avatar: googleAvatarUrl };
+      req.session.returnTo = `/${googleId}/dashboard/users`;
+
+      if (!process.env.TURNSTILE_SECRET_KEY || process.env.SKIP_CAPTCHA === 'true') {
+        req.session.captchaVerified = true;
+        return res.redirect(`/${googleId}/dashboard/users`);
+      }
+
+      res.redirect("/auth/verify-captcha");
     });
   });
   
   authenticator(req, res, next);
 });
 
-const { verifyTurnstile, requireCaptcha } = require('../middleware/captcha');
+// ===== CAPTCHA VERIFICATION =====
 
+// Страница капчи
 router.get('/verify-captcha', (req, res) => {
   res.render('verify-captcha', {
     csrfToken: req.session.csrfToken || '',
@@ -276,6 +299,7 @@ router.get('/verify-captcha', (req, res) => {
   });
 });
 
+// AJAX проверка капчи
 router.post('/verify-captcha', async (req, res) => {
   const token = req.body['cf-turnstile-response'] || req.headers['x-turnstile-token'];
   if (!token) {
