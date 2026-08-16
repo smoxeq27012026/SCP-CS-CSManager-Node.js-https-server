@@ -3,10 +3,8 @@ const passport = require("passport");
 const axios = require("axios");
 const supabase = require("../config/supabase");
 
-// Вход через Discord
 router.get("/login", passport.authenticate("discord"));
 
-// Callback после входа Discord — ИСПРАВЛЕННЫЙ
 router.get(
   "/callback",
   passport.authenticate("discord", { failureRedirect: "/" }),
@@ -31,14 +29,12 @@ router.get(
     const username = req.user.username;
     const avatarUrl = `https://cdn.discordapp.com/avatars/${discordId}/${req.user.avatar}.png`;
 
-    // 1. Пытаемся найти пользователя
     let { data: player, error: findError } = await supabase
       .from("players")
       .select("*")
       .eq("discord_id", discordId)
       .single();
 
-    // 2. Если не найден — СОЗДАЁМ
     if (!player) {
       console.log(`🆕 Создаём нового пользователя: ${username} (${discordId})`);
       
@@ -69,7 +65,6 @@ router.get(
       player = newPlayer;
       console.log(`✅ Пользователь создан: ${player.discord_id}`);
     } else {
-      // 3. Если существует — ОБНОВЛЯЕМ аватарку и имя
       console.log(`♻️ Обновляем данные пользователя: ${username}`);
       
       const needsAvatarUpdate = !player.avatar || 
@@ -107,7 +102,6 @@ router.get(
   }
 );
 
-// Вход через ключ доступа
 router.post("/key", async (req, res) => {
   const { key } = req.body;
   if (!key || !key.startsWith("dexk_")) {
@@ -140,7 +134,6 @@ router.post("/key", async (req, res) => {
   });
 });
 
-// Выход
 router.get("/logout", (req, res, next) => {
   const username = req.user?.username || "Unknown";
   
@@ -166,7 +159,6 @@ router.get("/logout", (req, res, next) => {
   });
 });
 
-// Google авторизация
 router.get("/google", (req, res, next) => {
   const callbackURL = `${req.protocol}://${req.get('host')}/auth/google/callback`;
   
@@ -212,7 +204,6 @@ router.get("/google/callback", (req, res, next) => {
         console.error("Webhook error:", e.message); 
       }
 
-      // Создаём/обновляем пользователя Google
       const googleId = user.id;
       let googleAvatarUrl = user.photos?.[0]?.value || 
         `https://ui-avatars.com/api/?background=3b9d6f&color=fff&name=${encodeURIComponent(user.username)}&size=128&rounded=true`;
@@ -274,6 +265,33 @@ router.get("/google/callback", (req, res, next) => {
   });
   
   authenticator(req, res, next);
+});
+
+const { verifyTurnstile, requireCaptcha } = require('../middleware/captcha');
+
+router.get('/verify-captcha', (req, res) => {
+  res.render('verify-captcha', {
+    csrfToken: req.session.csrfToken || '',
+    siteKey: process.env.TURNSTILE_SITE_KEY || '',
+  });
+});
+
+router.post('/verify-captcha', async (req, res) => {
+  const token = req.body['cf-turnstile-response'] || req.headers['x-turnstile-token'];
+  if (!token) {
+    return res.status(400).json({ success: false, error: 'Токен не передан' });
+  }
+
+  const ip = req.ip || req.connection.remoteAddress;
+  const isValid = await verifyTurnstile(token, ip);
+
+  if (isValid) {
+    req.session.captchaVerified = true;
+    const returnTo = req.session.returnTo || `/${req.user?.id || ''}/dashboard/users`;
+    return res.json({ success: true, redirect: returnTo });
+  }
+
+  res.status(400).json({ success: false, error: 'Неверная капча' });
 });
 
 module.exports = router;
