@@ -21,37 +21,21 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set("trust proxy", 1);
-
-// ===== ИСПРАВЛЕННЫЙ HELMET с 'unsafe-hashes' =====
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'", 
-        "'unsafe-inline'", 
-        "'unsafe-hashes'",  // ДОБАВЛЯЕМ для inline обработчиков
-        "https://cdnjs.cloudflare.com", 
-        "https://challenges.cloudflare.com",
-        "https://discord.com", 
-        "https://accounts.google.com"
-      ],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://challenges.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "https:", "data:", "blob:"],
-      connectSrc: ["'self'", "https://discord.com", "https://accounts.google.com"],
+      connectSrc: ["'self'"],
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-      frameSrc: [
-        "'self'", 
-        "https://challenges.cloudflare.com", 
-        "https://discord.com", 
-        "https://accounts.google.com"
-      ],
+      frameSrc: ["'self'", "https://challenges.cloudflare.com"],
       frameAncestors: ["'self'"],
       formAction: ["'self'", "https://discord.com", "https://accounts.google.com"],
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
 }));
 
 const authLimiter = rateLimit({
@@ -116,4 +100,4 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 2Сервер запущен на порту ${PORT}`));
