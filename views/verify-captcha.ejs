@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>DELTAxEX :: Проверка безопасности</title>
+  <link rel="icon" type="image/webp" href="https://deltaexscpcs.miraheze.org/wiki/Special:FilePath/Ff2c329f1ad8e4d847ec1ce12eb4f838.webp" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-dark: #07090e;
+      --bg-card: rgba(13, 17, 24, 0.75);
+      --border-color: rgba(255, 255, 255, 0.05);
+      --border-hover: rgba(59, 157, 111, 0.4);
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --accent-green: #3b9d6f;
+      --accent-hover: #45b07e;
+      --shadow-glow: 0 0 20px rgba(59, 157, 111, 0.2);
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top right, #121824 0%, var(--bg-dark) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 20px;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(59, 157, 111, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 40s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(40px, 40px); }
+    }
+
+    .captcha-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .captcha-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      padding: 48px 40px;
+      text-align: center;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+      animation: fadeInBlur 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    @keyframes fadeInBlur {
+      from { opacity: 0; transform: translateY(20px); filter: blur(8px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    .shield-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(59, 157, 111, 0.1);
+      border: 2px solid rgba(59, 157, 111, 0.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px auto;
+      animation: shieldPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes shieldPulse {
+      0% { box-shadow: 0 0 0 0 rgba(59, 157, 111, 0.2); transform: scale(1); }
+      50% { box-shadow: 0 0 0 15px rgba(59, 157, 111, 0); transform: scale(1.05); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 157, 111, 0); transform: scale(1); }
+    }
+
+    .shield-icon i {
+      font-size: 36px;
+      color: var(--accent-green);
+    }
+
+    .captcha-card h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .captcha-card .subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .turnstile-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0 16px 0;
+      min-height: 80px;
+    }
+
+    .turnstile-wrapper .cf-turnstile {
+      transform: scale(0.9);
+      transform-origin: center;
+    }
+
+    @media (max-width: 480px) {
+      .turnstile-wrapper .cf-turnstile {
+        transform: scale(0.8);
+      }
+    }
+
+    .status-message {
+      margin: 16px 0 20px 0;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .status-message.error {
+      display: flex;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    .status-message.success {
+      display: flex;
+      background: rgba(59, 157, 111, 0.1);
+      border: 1px solid rgba(59, 157, 111, 0.2);
+      color: var(--accent-green);
+    }
+
+    .status-message i {
+      font-size: 16px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px 28px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: inherit;
+      background: var(--accent-green);
+      color: #fff;
+      box-shadow: var(--shadow-glow);
+      margin-top: 8px;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(59, 157, 111, 0.35);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--border-color);
+      margin-top: 16px;
+    }
+
+    .back-link:hover {
+      color: var(--accent-green);
+      border-color: var(--border-hover);
+      background: rgba(59, 157, 111, 0.05);
+      transform: translateX(-4px);
+    }
+
+    @media (max-width: 560px) {
+      .captcha-card {
+        padding: 32px 24px;
+      }
+      .captcha-card h2 {
+        font-size: 20px;
+      }
+      .shield-icon {
+        width: 64px;
+        height: 64px;
+      }
+      .shield-icon i {
+        font-size: 28px;
+      }
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 10px; }
+  </style>
+</head>
+<body>
+<div class="captcha-container">
+  <div class="captcha-card">
+    <div class="shield-icon">
+      <i class="fas fa-shield-haltered"></i>
+    </div>
+
+    <h2>Проверка безопасности</h2>
+    <p class="subtitle">
+      Пожалуйста, подтвердите, что вы не бот,<br>чтобы получить доступ к панели управления
+    </p>
+
+    <div class="turnstile-wrapper">
+      <div class="cf-turnstile" 
+           data-sitekey="<%= siteKey %>" 
+           data-callback="onCaptchaSuccess"
+           data-error-callback="onCaptchaError"
+           data-expired-callback="onCaptchaExpired">
+      </div>
+    </div>
+
+    <div id="statusMessage" class="status-message">
+      <i class="fas fa-info-circle"></i>
+      <span id="statusText">Проверка...</span>
+    </div>
+
+    <button class="btn" id="continueBtn" disabled onclick="continueToDashboard()">
+      <i class="fas fa-arrow-right-to-bracket"></i> Продолжить
+    </button>
+
+    <div style="display: flex; justify-content: center;">
+      <a href="/" class="back-link">
+        <i class="fas fa-arrow-left"></i> На главную
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  let captchaToken = null;
+  let isVerified = false;
+
+  function onCaptchaSuccess(token) {
+    captchaToken = token;
+    isVerified = true;
+    document.getElementById('continueBtn').disabled = false;
+    document.getElementById('statusMessage').className = 'status-message success';
+    document.getElementById('statusText').textContent = '✅ Проверка пройдена! Нажмите "Продолжить"';
+    document.getElementById('statusMessage').style.display = 'flex';
+    
+    // Автоматически отправляем на сервер
+    verifyCaptcha(token);
+  }
+
+  function onCaptchaError() {
+    isVerified = false;
+    document.getElementById('continueBtn').disabled = true;
+    document.getElementById('statusMessage').className = 'status-message error';
+    document.getElementById('statusText').textContent = '⚠️ Ошибка капчи. Попробуйте снова';
+    document.getElementById('statusMessage').style.display = 'flex';
+  }
+
+  function onCaptchaExpired() {
+    isVerified = false;
+    captchaToken = null;
+    document.getElementById('continueBtn').disabled = true;
+    document.getElementById('statusMessage').className = 'status-message error';
+    document.getElementById('statusText').textContent = '⏰ Капча устарела. Обновите страницу';
+    document.getElementById('statusMessage').style.display = 'flex';
+  }
+
+  async function verifyCaptcha(token) {
+    try {
+      const response = await fetch('/auth/verify-captcha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        },
+        body: JSON.stringify({ 'cf-turnstile-response': token })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        document.getElementById('statusMessage').className = 'status-message success';
+        document.getElementById('statusText').textContent = '✅ Проверка пройдена!';
+        document.getElementById('statusMessage').style.display = 'flex';
+        document.getElementById('continueBtn').disabled = false;
+        
+        // Автоматический переход через 1.5 секунды
+        setTimeout(() => {
+          window.location.href = data.redirect || '/dashboard';
+        }, 1500);
+      } else {
+        document.getElementById('statusMessage').className = 'status-message error';
+        document.getElementById('statusText').textContent = '❌ ' + (data.error || 'Ошибка проверки');
+        document.getElementById('statusMessage').style.display = 'flex';
+        document.getElementById('continueBtn').disabled = true;
+        
+        // Сброс капчи
+        if (window.turnstile) {
+          window.turnstile.reset();
+        }
+      }
+    } catch (err) {
+      document.getElementById('statusMessage').className = 'status-message error';
+      document.getElementById('statusText').textContent = '⚠️ Ошибка соединения';
+      document.getElementById('statusMessage').style.display = 'flex';
+    }
+  }
+
+  function continueToDashboard() {
+    if (captchaToken) {
+      verifyCaptcha(captchaToken);
+    } else {
+      document.getElementById('statusMessage').className = 'status-message error';
+      document.getElementById('statusText').textContent = '⚠️ Сначала пройдите капчу';
+      document.getElementById('statusMessage').style.display = 'flex';
+    }
+  }
+
+  // Защита от повторной отправки
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      continueToDashboard();
+    }
+  });
+</script>
+</body>
+</html>
