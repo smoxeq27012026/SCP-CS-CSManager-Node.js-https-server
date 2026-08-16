@@ -2524,7 +2524,7 @@
           .then((r) => r.json())
           .then((data) => {
             if (data.success) {
-              const qrWin = window.open("", "_blank", "width=450,height=600");
+              const qrWin = window.open("", "_blank", "width=400,height=500");
               qrWin.document.write(
                 `<html><head><title>QR-код 2FA</title><style>body{background:#0a0d10;color:white;font-family:sans-serif;text-align:center;padding:20px;}</style></head><body><h3>Отсканируйте QR-код</h3><img src="${data.qr}" style="max-width:250px;margin:20px;"><p style="font-size:12px;color:#9ca3af;">Или введите ключ вручную:</p><p style="background:#1a1f2a;padding:10px;border-radius:8px;font-family:monospace;">${data.secret}</p><p style="font-size:12px;color:#9ca3af;margin-top:20px;">После добавления введите код для подтверждения:</p><input id="confirmCode" placeholder="000000" maxlength="6" style="padding:12px;border-radius:8px;border:1px solid #3b3f4a;background:#1a1f2a;color:white;text-align:center;font-size:18px;"><br><button onclick="confirm()" style="margin-top:12px;padding:12px 24px;border-radius:8px;background:#3b9d6f;color:white;border:none;cursor:pointer;">Подтвердить</button><script>function confirm(){const c=document.getElementById('confirmCode').value;fetch('/auth/2fa/confirm-enable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c})}).then(r=>r.json()).then(d=>{if(d.success){opener.showToast('Успешно','2FA включена!','success');opener.update2FAButton();window.close();}else{opener.showToast('Ошибка',d.error,'error');}});}<\/script></body></html>`
               );
