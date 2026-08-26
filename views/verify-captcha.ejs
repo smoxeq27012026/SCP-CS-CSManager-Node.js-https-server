@@ -287,7 +287,7 @@
     isVerified = true;
     document.getElementById('continueBtn').disabled = false;
     document.getElementById('statusMessage').className = 'status-message success';
-    document.getElementById('statusText').textContent = '✅ Проверка пройдена! Нажмите "Продолжить"';
+    document.getElementById('statusText').textContent = 'Проверка пройдена! Нажмите "Продолжить"';
     document.getElementById('statusMessage').style.display = 'flex';
     
     // Автоматически отправляем на сервер
@@ -298,7 +298,7 @@
     isVerified = false;
     document.getElementById('continueBtn').disabled = true;
     document.getElementById('statusMessage').className = 'status-message error';
-    document.getElementById('statusText').textContent = '⚠️ Ошибка капчи. Попробуйте снова';
+    document.getElementById('statusText').textContent = 'Ошибка капчи. Попробуйте снова';
     document.getElementById('statusMessage').style.display = 'flex';
   }
 
@@ -307,7 +307,7 @@
     captchaToken = null;
     document.getElementById('continueBtn').disabled = true;
     document.getElementById('statusMessage').className = 'status-message error';
-    document.getElementById('statusText').textContent = '⏰ Капча устарела. Обновите страницу';
+    document.getElementById('statusText').textContent = 'Капча устарела. Обновите страницу';
     document.getElementById('statusMessage').style.display = 'flex';
   }
 
@@ -325,7 +325,7 @@
       
       if (data.success) {
         document.getElementById('statusMessage').className = 'status-message success';
-        document.getElementById('statusText').textContent = '✅ Проверка пройдена!';
+        document.getElementById('statusText').textContent = 'Проверка пройдена!';
         document.getElementById('statusMessage').style.display = 'flex';
         document.getElementById('continueBtn').disabled = false;
         
@@ -335,7 +335,7 @@
         }, 1500);
       } else {
         document.getElementById('statusMessage').className = 'status-message error';
-        document.getElementById('statusText').textContent = '❌ ' + (data.error || 'Ошибка проверки');
+        document.getElementById('statusText').textContent = '' + (data.error || 'Ошибка проверки');
         document.getElementById('statusMessage').style.display = 'flex';
         document.getElementById('continueBtn').disabled = true;
         
@@ -346,7 +346,7 @@
       }
     } catch (err) {
       document.getElementById('statusMessage').className = 'status-message error';
-      document.getElementById('statusText').textContent = '⚠️ Ошибка соединения';
+      document.getElementById('statusText').textContent = 'Ошибка соединения';
       document.getElementById('statusMessage').style.display = 'flex';
     }
   }
@@ -356,7 +356,7 @@
       verifyCaptcha(captchaToken);
     } else {
       document.getElementById('statusMessage').className = 'status-message error';
-      document.getElementById('statusText').textContent = '⚠️ Сначала пройдите капчу';
+      document.getElementById('statusText').textContent = 'Сначала пройдите капчу';
       document.getElementById('statusMessage').style.display = 'flex';
     }
   }
